@@ -9,144 +9,67 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --primary-green: #006039;
-            --accent-green: #27ae60;
-            --text-dark: #1f2937;
-            --text-grey: #6b7280;
-            --live-red: #e74c3c;
-            --bg-light: #f8f9fa;
-        }
-
+        :root { --primary-green: #006039; --accent-green: #2ecc71; --text-dark: #1f2937; --text-grey: #6b7280; --live-red: #ef4444; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Tajawal', sans-serif; background-color: #f0f2f5; color: var(--text-dark); }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; color: var(--text-dark); }
 
-        /* الهيدر */
-        .navbar {
-            background-color: #fff; padding: 15px; display: flex;
-            justify-content: center; align-items: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
-        }
-        .logo-area { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.3rem; color: var(--primary-green); }
-        .logo-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-green); }
+        .navbar { background-color: #fff; padding: 15px 5%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .logo-area { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.4rem; color: var(--primary-green); }
+        .logo-img { width: 45px; height: 45px; border-radius: 50%; }
 
-        /* الهيرو */
-        .hero {
-            background: linear-gradient(135deg, var(--primary-green), #0b3d29);
-            color: white; text-align: center; padding: 40px 20px 60px;
-            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
-        }
-        .hero h1 { font-size: 2rem; margin-bottom: 5px; font-weight: 800; }
-        .hero p { font-size: 0.9rem; opacity: 0.8; }
+        .hero { background: linear-gradient(135deg, var(--primary-green), #004d2e); color: white; text-align: center; padding: 50px 20px; }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 10px; font-weight: 800; }
+        .hero p { font-size: 1rem; opacity: 0.9; }
 
-        /* الحاوية */
-        .container { max-width: 800px; margin: -40px auto 50px; padding: 0 15px; position: relative; z-index: 2; }
-        
-        /* بطاقة الدوري */
-        .league-card { 
-            background: white; border-radius: 16px; margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #edf2f7;
-        }
-        .league-header {
-            background: #fff; padding: 15px 20px; border-bottom: 1px solid #f1f5f9;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .league-title { font-weight: 800; color: var(--primary-green); display: flex; align-items: center; gap: 8px; font-size: 1rem; }
-        .league-title i { color: #f1c40f; }
-        .league-round { font-size: 0.75rem; background: #f3f4f6; padding: 4px 10px; border-radius: 20px; color: #666; font-weight: bold; }
+        .container { max-width: 1200px; margin: -30px auto 50px; padding: 0 15px; position: relative; z-index: 2; }
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
 
-        /* --- تنسيق صف المباراة --- */
-        .match-row {
-            display: flex; align-items: center; padding: 15px 10px;
-            border-bottom: 1px solid #f8fafc; height: 90px;
-        }
+        .league-card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e5e7eb; }
+        .league-header { background: #fff; padding: 15px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--primary-green); }
+        .live-badge { background: var(--live-red); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; animation: pulse 1.5s infinite; }
+
+        .match-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #f9fafb; transition: 0.2s; }
         .match-row:last-child { border-bottom: none; }
-
-        /* الفريق */
-        .team { 
-            flex: 1; display: flex; align-items: center; gap: 10px; 
-            font-size: 0.95rem; font-weight: 700; color: #2d3748; 
-        }
-        .team.home { justify-content: flex-start; }
-        .team.away { justify-content: flex-end; text-align: right; }
         
-        .team img { 
-            width: 40px; height: 40px; object-fit: contain; 
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
-        }
+        .team { display: flex; align-items: center; gap: 8px; flex: 1; font-size: 0.9rem; font-weight: 600; color: #374151; }
+        .team.away { justify-content: flex-end; }
+        .team img { width: 30px; height: 30px; object-fit: contain; }
 
-        /* منطقة الوسط (النتيجة والوقت) */
-        .match-center {
-            width: 100px; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center;
-        }
-
-        /* النتيجة */
-        .score {
-            font-size: 1.8rem; font-weight: 900; color: #1a202c;
-            line-height: 1; letter-spacing: 2px; margin-bottom: 4px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .score.live { color: var(--accent-green); }
-
-        /* حاوية المعلومات السفلية (الوقت + مباشر) */
-        .meta-info {
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            font-size: 0.75rem; font-weight: 700; color: var(--text-grey);
-        }
-
-        /* الوقت */
+        .match-center { text-align: center; min-width: 140px; }
+        .score-box { background: #f3f4f6; color: var(--text-dark); padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 1.2rem; display: inline-block; margin-bottom: 4px; direction: ltr; }
+        .score-box.live { background: #dcfce7; color: #166534; }
+        
+        /* تنسيق الوقت والحالة بجانب بعض */
+        .match-status-container { font-size: 0.75rem; color: var(--text-grey); font-weight: bold; display: flex; justify-content: center; gap: 5px; align-items: center; }
         .match-time { direction: ltr; font-variant-numeric: tabular-nums; }
         .match-time.live { color: var(--live-red); }
+        .status-text { color: #666; font-size: 0.7rem; }
 
-        /* أيقونة المباشر */
-        .live-dot {
-            width: 6px; height: 6px; background-color: var(--live-red);
-            border-radius: 50%; display: none;
-        }
-        .live-dot.active { display: block; animation: blink 1s infinite; }
-
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-
-        /* الفوتر */
-        footer { margin-top: 50px; text-align: center; color: #888; font-size: 0.8rem; padding-bottom: 20px; }
-
-        /* تجاوب للموبايل */
-        @media (max-width: 450px) {
-            .team { font-size: 0.8rem; flex-direction: column; gap: 5px; text-align: center !important; }
-            .team.home { flex-direction: column-reverse; }
-            .team.away { flex-direction: column; }
-            .match-row { height: auto; padding: 20px 5px; }
-            .match-center { width: 80px; }
-            .score { font-size: 1.5rem; }
-        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        footer { background: #111827; color: white; padding: 30px 20px; margin-top: 50px; text-align: center; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="logo-area">
+            <span>الكرة في ولاية الأغواط</span>
             <img src="https://i.top4top.io/p_3636li6n50.jpg" class="logo-img">
-            <span>الكرة في الأغواط</span>
         </div>
     </nav>
 
     <section class="hero">
-        <h1>نتائج المباريات</h1>
-        <p>تغطية حصرية لبطولات الولاية والجنوب</p>
+        <h1>الكرة في ولاية الأغواط</h1>
+        <p>تابع نتائج المباريات وترتيب الفرق لحظة بلحظة</p>
     </section>
 
     <div class="container">
-        <div id="matches-container">
-            <div style="text-align:center; padding:40px; color:#888;">
-                <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>جاري جلب المباريات...
-            </div>
+        <div class="matches-grid" id="matches-container">
+            <div style="text-align:center; padding:20px;">جاري تحميل المباريات...</div>
         </div>
     </div>
 
-    <footer>
-        <p>جميع الحقوق محفوظة © 2024</p>
-    </footer>
+    <footer><p>جميع الحقوق محفوظة © الكرة في الأغواط 2024</p></footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -165,14 +88,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- إصلاح دالة الوقت لتجنب NaN ---
         function formatTime(totalSeconds) {
-            // إذا كان الرقم غير موجود أو ليس رقماً، نعتبره صفر
-            if (!totalSeconds || isNaN(totalSeconds)) {
-                totalSeconds = 0;
-            }
+            if (!totalSeconds || isNaN(totalSeconds)) totalSeconds = 0;
             if (totalSeconds < 0) totalSeconds = 0;
-            
             const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
             const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
             return `${m}:${s}`;
@@ -183,7 +101,7 @@
             container.innerHTML = "";
             
             if(snapshot.empty) {
-                container.innerHTML = "<div style='text-align:center; padding:20px; color:#666;'>لا توجد مباريات حالياً</div>";
+                container.innerHTML = "<div style='text-align:center; color:#666;'>لا توجد مباريات</div>";
                 return;
             }
 
@@ -198,67 +116,63 @@
                 let cardHtml = `
                 <div class="league-card">
                     <div class="league-header">
-                        <div class="league-title">
-                            <i class="fa-solid fa-trophy"></i> ${leagueName}
-                        </div>
-                        <div class="league-round">${matches[0].round || 'مباراة'}</div>
+                        <div><i class="fa-solid fa-trophy"></i> ${leagueName}</div>
+                        <span style="font-size:0.8rem; color:#888;">${matches[0].round || 'مباراة'}</span>
                     </div>
                     <div>`;
 
                 matches.forEach(m => {
-                    // --- التأكد من أن الثواني رقم صحيح (إصلاح المشكلة) ---
                     let currentSeconds = m.elapsedSeconds || 0;
-                    
                     if(m.isRunning && m.lastStartTime) {
                         const now = Date.now();
                         currentSeconds += (now - m.lastStartTime) / 1000;
                     }
 
-                    // الحالة
-                    let isLive = m.isRunning || m.status.includes("الشوط");
-                    let statusText = m.status; 
-                    
+                    // --- منطق العرض الجديد (نص بجوار الوقت) ---
+                    let isLive = m.isRunning || m.status.includes("جاري");
+                    let statusLabel = ""; // النص الذي يظهر بجانب الوقت
+                    let timeDisplay = "";
                     let timeClass = "";
                     let scoreClass = "";
-                    let dotClass = "";
+                    let liveBadge = "";
                     let timerData = "";
 
+                    // 1. حالة المباشر (الشوط 1 أو 2)
                     if (isLive) {
-                        statusText = formatTime(currentSeconds);
+                        timeDisplay = formatTime(currentSeconds);
                         timeClass = "live match-timer-active";
                         scoreClass = "live";
-                        dotClass = "active";
+                        liveBadge = `<span class="live-badge">مباشر</span>`;
                         
-                        timerData = `
-                            data-running="${m.isRunning}" 
-                            data-start="${m.lastStartTime}" 
-                            data-base="${m.elapsedSeconds || 0}"
-                        `;
+                        // استخراج النص المختصر (شوط 1 / شوط 2)
+                        if (m.status.includes("الأول")) statusLabel = "الشوط 1";
+                        if (m.status.includes("الثاني")) statusLabel = "الشوط 2";
+                        
+                        timerData = `data-running="${m.isRunning}" data-start="${m.lastStartTime}" data-base="${m.elapsedSeconds || 0}"`;
                     }
-                    
-                    // نصوص الحالات الأخرى
-                    if(m.status.includes("استراحة")) statusText = "استراحة";
-                    if(m.status.includes("نهاية")) statusText = "نهاية";
-                    if(m.status.includes("لم تبدأ")) statusText = "--:--";
+                    // 2. حالة الاستراحة أو النهاية أو لم تبدأ
+                    else {
+                        if (m.status.includes("استراحة")) statusLabel = "استراحة";
+                        else if (m.status.includes("انتهت")) statusLabel = "انتهت";
+                        else if (m.status.includes("لم تبدأ")) statusLabel = "لم تبدأ";
+                        
+                        timeDisplay = ""; // لا نعرض الوقت الرقمي في هذه الحالات (أو يمكن عرض --:--)
+                    }
 
                     cardHtml += `
                         <div class="match-row">
-                            <!-- المستضيف (يمين) -->
                             <div class="team home">
                                 <img src="${m.homeLogo}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
                                 <span>${m.home}</span>
                             </div>
-
-                            <!-- الوسط: النتيجة وتحتها الوقت -->
                             <div class="match-center">
-                                <div class="score ${scoreClass}">${m.scoreA} - ${m.scoreH}</div>
-                                <div class="meta-info">
-                                    <div class="live-dot ${dotClass}"></div>
-                                    <div class="match-time ${timeClass}" ${timerData}>${statusText}</div>
+                                ${liveBadge}
+                                <div class="score-box ${scoreClass}">${m.scoreA} - ${m.scoreH}</div>
+                                <div class="match-status-container">
+                                    <span class="match-time ${timeClass}" ${timerData}>${timeDisplay}</span>
+                                    <span class="status-text">${statusLabel}</span>
                                 </div>
                             </div>
-
-                            <!-- الضيف (يسار) -->
                             <div class="team away">
                                 <span>${m.away}</span>
                                 <img src="${m.awayLogo}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
@@ -271,19 +185,16 @@
             }
         });
 
-        // العداد المحلي السلس
+        // العداد المحلي
         setInterval(() => {
             const timers = document.querySelectorAll('.match-timer-active');
             const now = Date.now();
-            
             timers.forEach(timer => {
                 const isRunning = timer.getAttribute('data-running') === 'true';
                 if (isRunning) {
                     const startTime = parseInt(timer.getAttribute('data-start'));
-                    // معالجة حالة الرقم غير الموجود (NaN protection)
                     let baseSeconds = parseInt(timer.getAttribute('data-base'));
                     if (isNaN(baseSeconds)) baseSeconds = 0;
-                    
                     if (!isNaN(startTime)) {
                         const diffSeconds = (now - startTime) / 1000;
                         const totalSeconds = baseSeconds + diffSeconds;
@@ -292,7 +203,6 @@
                 }
             });
         }, 1000);
-
     </script>
 </body>
 </html>
