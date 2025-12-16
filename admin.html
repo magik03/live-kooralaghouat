@@ -3,37 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أدمن - رابطة الأغواط وورقلة</title>
+    <title>أدمن - التحكم الذكي</title>
     <link rel="icon" href="https://i.top4top.io/p_3636li6n50.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Tajawal', sans-serif; background: #f4f6f8; margin: 0; min-height: 100vh; padding: 10px; padding-bottom: 80px; }
+        body { font-family: 'Tajawal', sans-serif; background: #f0f2f5; margin: 0; min-height: 100vh; padding: 10px; padding-bottom: 80px; }
         
         #login-screen { display: flex; flex-direction: column; height: 90vh; justify-content: center; max-width: 400px; margin: 0 auto; }
-        .logo-header { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #27ae60; margin: 0 auto 15px; display: block; object-fit: cover; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #e1e4e8; }
+        .logo-header { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #27ae60; margin: 0 auto 20px; display: block; object-fit: cover; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e1e4e8; }
         
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal'; font-size: 16px; background: #fff; }
-        button { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; font-family: 'Tajawal'; font-size: 16px; background: #fff; transition: 0.3s; }
+        input:focus, select:focus { border-color: #27ae60; outline: none; }
         
-        .edit-card { background: #fff; border: 1px solid #ccc; border-radius: 10px; padding: 10px; margin-bottom: 15px; border-top: 5px solid #3498db; }
-        .section-label { font-size: 0.8rem; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; margin-top: 10px; border-bottom: 1px dashed #eee; }
+        button { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
         
-        .team-select-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-        .team-img-small { width: 40px; height: 40px; border-radius: 5px; object-fit: contain; border: 1px solid #eee; background: #f9f9f9; }
+        .edit-card { background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; overflow: hidden; }
+        .edit-card::before { content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 6px; background: #3498db; }
         
-        .timer-controls { display: flex; gap: 5px; align-items: center; background: #f0f8ff; padding: 10px; border-radius: 8px; border: 1px solid #bcdff1; }
-        .btn-start { background: #27ae60; padding: 8px; font-size: 0.9rem; }
-        .btn-stop { background: #e74c3c; padding: 8px; font-size: 0.9rem; }
-        .time-display { font-size: 1.2rem; font-weight: bold; width: 60px; text-align: center; border: 2px solid #333; border-radius: 5px; background: #fff; color: #333; }
+        .section-label { font-size: 0.85rem; color: #6b7280; font-weight: 700; margin: 15px 0 8px; display: flex; align-items: center; gap: 5px; }
+        .team-select-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .team-img-small { width: 45px; height: 45px; border-radius: 50%; object-fit: contain; border: 1px solid #eee; background: #fff; padding: 2px; }
+        
+        .timer-wrapper { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #cbd5e1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .timer-controls { display: flex; gap: 10px; width: 100%; }
+        .btn-control { flex: 1; font-size: 0.9rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-start { background: #10b981; }
+        .btn-stop { background: #ef4444; }
+        
+        .time-display-wrapper { display: flex; align-items: center; gap: 5px; font-weight: bold; color: #333; }
+        .time-input { width: 70px !important; text-align: center; font-size: 1.3rem; margin: 0; border: 2px solid #e2e8f0; }
+        
+        .score-edit-row { display: flex; justify-content: center; align-items: center; gap: 15px; background: #f1f5f9; padding: 15px; border-radius: 12px; margin: 15px 0; }
+        .score-input { width: 60px !important; text-align: center; font-size: 1.8rem; font-weight: 800; margin: 0; border: 2px solid #cbd5e1; color: #1e293b; }
 
-        .score-edit-row { display: flex; justify-content: center; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 10px 0; }
-        .score-input { width: 60px !important; text-align: center; font-size: 1.5rem; font-weight: bold; margin: 0; border: 2px solid #ddd; }
+        .btns-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-save { background: #3b82f6; flex: 2; }
+        .btn-del { background: #ef4444; flex: 1; }
         
-        .btns-row { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-save { background: #2980b9; flex: 2; }
-        .btn-del { background: #c0392b; flex: 1; }
+        .live-indicator { display: inline-block; width: 10px; height: 10px; background: red; border-radius: 50%; animation: blink 1s infinite; margin-right: 5px; display: none; }
+        .live-indicator.active { display: inline-block; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -41,7 +53,7 @@
     <div id="login-screen">
         <div class="card" style="text-align:center;">
             <img src="https://i.top4top.io/p_3636li6n50.jpg" class="logo-header">
-            <h3>لوحة التحكم</h3>
+            <h3>تسجيل دخول المشرف</h3>
             <input type="email" id="email" placeholder="البريد الإلكتروني" style="direction: ltr;">
             <input type="password" id="password" placeholder="كلمة المرور" style="direction: ltr;">
             <button id="btnLogin">دخول</button>
@@ -49,36 +61,32 @@
     </div>
 
     <div id="dashboard" style="display:none; max-width: 600px; margin: 0 auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0;">المباريات</h3>
-            <button onclick="window.location.reload()" style="width:auto; background:#7f8c8d; padding:5px 15px; font-size:0.9rem;">تحديث</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; color:#1f2937;">إدارة المباريات</h3>
+            <button onclick="window.location.reload()" style="width:auto; background:#6b7280; padding:8px 20px; font-size:0.9rem;">تحديث</button>
         </div>
 
-        <!-- إضافة مباراة -->
-        <div class="card" style="border: 1px solid #27ae60;">
-            <h3 style="margin-top:0; color:#27ae60; font-size:1rem;">+ نشر مباراة جديدة</h3>
-            
+        <div class="card" style="border-top: 5px solid #27ae60;">
+            <h3 style="margin-top:0; color:#27ae60; font-size:1.1rem;">+ نشر مباراة جديدة</h3>
             <select id="newLeague" onchange="updateClubsList()">
-                <option value="" disabled selected>-- اختر البطولة أولاً --</option>
+                <option value="" disabled selected>-- اختر البطولة --</option>
                 <option value="الجهوي الأول (فوج أ)">الجهوي الأول (فوج أ)</option>
                 <option value="الجهوي الأول (فوج ب)">الجهوي الأول (فوج ب)</option>
                 <option value="الجهوي الثاني (فوج ج)">الجهوي الثاني (فوج ج)</option>
-                <option value="قسم ما بين الرابطات">قسم ما بين الرابطات (الجنوب الشرقي)</option>
+                <option value="قسم ما بين الرابطات">قسم ما بين الرابطات</option>
                 <option value="شرفي الأغواط">شرفي الأغواط</option>
                 <option value="ولائي الأغواط">ولائي الأغواط</option>
                 <option value="كأس الجمهورية">كأس الجمهورية 🏆</option>
             </select>
-            
             <input type="text" id="newRound" placeholder="الجولة (مثال: 14)">
             
             <div style="display:flex; gap:10px;">
-                <select id="newHome" class="club-select"><option value="">اختر البطولة أعلاه ☝️</option></select>
-                <select id="newAway" class="club-select"><option value="">اختر البطولة أعلاه ☝️</option></select>
+                <select id="newHome" class="club-select"><option value="">المستضيف (يمين)</option></select>
+                <select id="newAway" class="club-select"><option value="">الضيف (يسار)</option></select>
             </div>
             <button id="btnAdd">نشر المباراة</button>
         </div>
 
-        <h3 style="margin-bottom:10px;">المباريات الجارية:</h3>
         <div id="matches-list"></div>
     </div>
 
@@ -87,7 +95,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ⚠️⚠️ ضع كود Firebase Config الخاص بك هنا ⚠️⚠️
+        // إعدادات فايربيس
         const firebaseConfig = {
           apiKey: "AIzaSyAXLSZ5OqPEOnP0DUx3w75fU2xxiVkrWcE",
           authDomain: "koooralaghouat.firebaseapp.com",
@@ -102,9 +110,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ==========================================
-        // 🟢 قاعدة بيانات الأندية (كاملة)
-        // ==========================================
+        // بيانات الأندية
         window.leaguesData = {
             "الجهوي الأول (فوج أ)": [
                 { name: "ش ب عين اميناس", logo: "https://lrfouargla.com/uploads/images/logos/1(1).png" },
@@ -122,7 +128,6 @@
                 { name: "شباب قصر الحيران", logo: "https://lrfouargla.com/uploads/images/logos/54.png" },
                 { name: "إتحاد حاسي الدلاعة", logo: "https://lrfouargla.com/uploads/images/logos/53.png" }
             ],
-            
             "الجهوي الأول (فوج ب)": [
                 { name: "شباب قصر ورقلة", logo: "https://lrfouargla.com/uploads/images/logos/15826488_199664807171500_3091424271281007906_n.gif" },
                 { name: "وفاق المغير", logo: "https://lrfouargla.com/uploads/images/logos/111.png" },
@@ -139,7 +144,6 @@
                 { name: "إ.الحمادين", logo: "https://lrfouargla.com/uploads/images/logos/168-1531611858.png" },
                 { name: "نجم بوغفالة", logo: "https://lrfouargla.com/uploads/images/logos/NRNBO-02.png" }
             ],
-
             "الجهوي الثاني (فوج ج)": [
                 { name: "م .ش .الثنية غرداية", logo: "https://lrfouargla.com/uploads/images/logos/449-1634476753.png" },
                 { name: "مولودية البيضاء", logo: "https://lrfouargla.com/uploads/images/logos/46.png" },
@@ -158,7 +162,6 @@
                 { name: "أمل سيدي بوزيد", logo: "https://lrfouargla.com/uploads/images/logos/49.png" },
                 { name: "اتحاد شباب تاغيت", logo: "https://lrfouargla.com/uploads/images/logos/1855-1664293222.png" }
             ],
-
             "قسم ما بين الرابطات": [
                 { name: "إتحاد النزلة", logo: "https://lirf.org.dz/uploads/images/logos/3.png" },
                 { name: "نادي تقرت", logo: "https://lirf.org.dz/uploads/images/logos/received_257439396802495.jpeg" },
@@ -177,51 +180,31 @@
                 { name: "اتحاد سوف", logo: "https://lirf.org.dz/uploads/images/logos/412-1715352850.png" },
                 { name: "اتحاد ورقلة", logo: "https://lirf.org.dz/uploads/images/logos/414-1662939264.png" }
             ],
-
-            "default": [
-                { name: "فريق 1", logo: "" },
-                { name: "فريق 2", logo: "" }
-            ]
+            "default": [ { name: "فريق 1", logo: "" }, { name: "فريق 2", logo: "" } ]
         };
 
-        // دالة تحديث قوائم الفرق
         window.updateClubsList = () => {
             const league = document.getElementById('newLeague').value;
             const homeSelect = document.getElementById('newHome');
             const awaySelect = document.getElementById('newAway');
-            
             homeSelect.innerHTML = '<option value="">المستضيف (يمين)</option>';
             awaySelect.innerHTML = '<option value="">الضيف (يسار)</option>';
-
             const clubs = window.leaguesData[league] || window.leaguesData["default"];
-
             clubs.forEach(club => {
-                const opt1 = document.createElement('option');
-                opt1.value = club.name;
-                opt1.innerText = club.name;
-                opt1.setAttribute('data-logo', club.logo);
-                homeSelect.appendChild(opt1);
-
-                const opt2 = document.createElement('option');
-                opt2.value = club.name;
-                opt2.innerText = club.name;
-                opt2.setAttribute('data-logo', club.logo);
-                awaySelect.appendChild(opt2);
+                const opt1 = document.createElement('option'); opt1.value = club.name; opt1.innerText = club.name; opt1.setAttribute('data-logo', club.logo); homeSelect.appendChild(opt1);
+                const opt2 = document.createElement('option'); opt2.value = club.name; opt2.innerText = club.name; opt2.setAttribute('data-logo', club.logo); awaySelect.appendChild(opt2);
             });
         };
 
         const getLogoFromSelect = (selectId) => {
             const select = document.getElementById(selectId);
-            const selectedOption = select.options[select.selectedIndex];
-            return selectedOption.getAttribute('data-logo') || 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+            return select.options[select.selectedIndex].getAttribute('data-logo') || 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
         };
 
         onAuthStateChanged(auth, (user) => {
             document.getElementById('login-screen').style.display = user ? 'none' : 'flex';
             document.getElementById('dashboard').style.display = user ? 'block' : 'none';
-            if(user) {
-                loadMatches();
-            }
+            if(user) loadMatches();
         });
 
         document.getElementById('btnLogin').addEventListener('click', () => {
@@ -234,24 +217,18 @@
             const round = document.getElementById('newRound').value;
             const home = document.getElementById('newHome').value;
             const away = document.getElementById('newAway').value;
-            
             if(league && home && away) {
-                const homeLogo = getLogoFromSelect('newHome');
-                const awayLogo = getLogoFromSelect('newAway');
-
                 if(confirm("نشر المباراة؟")) {
                     await addDoc(collection(db, "matches"), {
-                        league, round, home, away, 
-                        homeLogo, awayLogo,
+                        league, round, home, away, homeLogo: getLogoFromSelect('newHome'), awayLogo: getLogoFromSelect('newAway'),
                         scoreH: 0, scoreA: 0, scorersH: "", scorersA: "", 
                         status: "لم تبدأ", 
-                        time: 0, isRunning: false, lastStartTime: null
+                        elapsedSeconds: 0, 
+                        isRunning: false, lastStartTime: null
                     });
                     alert("تم النشر ✅");
                 }
-            } else {
-                alert("الرجاء اختيار البطولة والفريقين");
-            }
+            } else { alert("الرجاء إكمال البيانات"); }
         });
 
         function loadMatches() {
@@ -263,24 +240,26 @@
                     const id = d.id;
                     const sel = (val) => m.status === val ? 'selected' : '';
 
-                    let displayTime = m.time;
+                    let currentSeconds = m.elapsedSeconds || 0;
                     if(m.isRunning && m.lastStartTime) {
                         const now = Date.now();
-                        const diffMins = Math.floor((now - m.lastStartTime) / 60000);
-                        displayTime = parseInt(m.time) + diffMins;
+                        currentSeconds += Math.floor((now - m.lastStartTime) / 1000);
                     }
+                    const minutes = Math.floor(currentSeconds / 60);
+
+                    // حالة الوميض للمشرف
+                    const liveClass = m.isRunning ? 'active' : '';
 
                     list.innerHTML += `
                     <div class="edit-card">
-                        <div style="text-align:center; font-weight:bold; color:#888; margin-bottom:10px;">
-                            ${m.league} (${m.round})
-                        </div>
+                        <div style="text-align:center; font-weight:bold; color:#6b7280; margin-bottom:10px;">${m.league}</div>
 
-                        <div class="section-label">الفرق (يمين: مستضيف / يسار: ضيف)</div>
-                        <div class="team-select-row">
+                        <div class="section-label">المستضيف (يمين)</div>
+                        <div class="team-edit-row">
                             <img src="${m.homeLogo}" class="team-img-small">
-                            <input type="text" value="${m.home}" disabled style="background:#eee; font-weight:bold;">
+                            <input type="text" id="hName-${id}" value="${m.home}" class="name-input">
                         </div>
+                        <input type="text" id="hLogo-${id}" value="${m.homeLogo}" class="logo-input" placeholder="رابط الشعار">
                         
                         <div class="score-edit-row">
                             <input type="number" id="sH-${id}" value="${m.scoreH}" class="score-input">
@@ -288,69 +267,20 @@
                             <input type="number" id="sA-${id}" value="${m.scoreA}" class="score-input">
                         </div>
 
-                        <div class="team-select-row">
+                        <div class="section-label">الضيف (يسار)</div>
+                        <div class="team-edit-row">
                             <img src="${m.awayLogo}" class="team-img-small">
-                            <input type="text" value="${m.away}" disabled style="background:#eee; font-weight:bold;">
+                            <input type="text" id="aName-${id}" value="${m.away}" class="name-input">
                         </div>
+                        <input type="text" id="aLogo-${id}" value="${m.awayLogo}" class="logo-input" placeholder="رابط الشعار">
 
                          <input type="text" id="scH-${id}" value="${m.scorersH || ''}" placeholder="هدافي المستضيف" style="font-size:0.8rem; margin-top:5px;">
                          <input type="text" id="scA-${id}" value="${m.scorersA || ''}" placeholder="هدافي الضيف" style="font-size:0.8rem; margin-top:5px;">
 
-                        <div class="section-label">التحكم في الوقت</div>
-                        <div class="timer-controls">
-                            <button class="btn-start" onclick="window.toggleTimer('${id}', true, ${displayTime})" ${m.isRunning ? 'disabled style="opacity:0.5"' : ''}>تشغيل ▷</button>
-                            <input type="number" id="tm-${id}" value="${displayTime}" class="time-display">
-                            <button class="btn-stop" onclick="window.toggleTimer('${id}', false, ${displayTime})" ${!m.isRunning ? 'disabled style="opacity:0.5"' : ''}>إيقاف ⏸</button>
-                        </div>
-                        
-                        <div style="margin-top:10px;">
-                            <select id="st-${id}" style="font-weight:bold;">
-                                <option value="لم تبدأ" ${sel("لم تبدأ")}>⚪ لم تبدأ</option>
-                                <option value="الشوط الأول" ${sel("الشوط الأول")}>🟢 الشوط 1</option>
-                                <option value="نهاية الشوط الأول" ${sel("نهاية الشوط الأول")}>🟠 استراحة</option>
-                                <option value="الشوط الثاني" ${sel("الشوط الثاني")}>🟢 الشوط 2</option>
-                                <option value="نهاية المباراة" ${sel("نهاية المباراة")}>⚫ انتهت</option>
-                            </select>
-                        </div>
-
-                        <div class="btns-row">
-                            <button class="btn-save" onclick="window.upd('${id}', ${m.isRunning})">حفظ النتائج 💾</button>
-                            <button class="btn-del" onclick="window.del('${id}')">حذف</button>
-                        </div>
-                    </div>`;
-                });
-            });
-        }
-
-        window.toggleTimer = async (id, start, currentTime) => {
-            const timeVal = Number(document.getElementById(`tm-${id}`).value);
-            if(start) {
-                await updateDoc(doc(db, "matches", id), {
-                    isRunning: true, lastStartTime: Date.now(), time: timeVal
-                });
-            } else {
-                await updateDoc(doc(db, "matches", id), {
-                    isRunning: false, lastStartTime: null, time: timeVal
-                });
-            }
-        };
-
-        window.upd = async (id, isRunning) => {
-            let updateData = {
-                scoreH: Number(document.getElementById(`sH-${id}`).value),
-                scoreA: Number(document.getElementById(`sA-${id}`).value),
-                scorersH: document.getElementById(`scH-${id}`).value,
-                scorersA: document.getElementById(`scA-${id}`).value,
-                status: document.getElementById(`st-${id}`).value,
-            };
-            if (!isRunning) {
-                updateData.time = Number(document.getElementById(`tm-${id}`).value);
-            }
-            await updateDoc(doc(db, "matches", id), updateData);
-            alert("تم التحديث ✅");
-        };
-        
-        window.del = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "matches", id)); };
-    </script>
-</body>
-</html>
+                        <div class="section-label"><span class="live-indicator ${liveClass}"></span> ⏱️ المؤقت (الدقائق:الثواني)</div>
+                        <div class="timer-wrapper">
+                            <div class="time-display-wrapper">
+                                <span>ضبط الدقيقة:</span>
+                                <input type="number" id="tm-set-${id}" value="${minutes}" class="time-input" placeholder="00">
+                            </div>
+                            <div class="timer-
