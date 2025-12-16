@@ -10,19 +10,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Tajawal', sans-serif; }
+        /* Live Pulse Animation */
         @keyframes pulse-ring {
             0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
             70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
             100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         .live-indicator { animation: pulse-ring 2s infinite; }
+        
+        /* تحسينات اللمس للهواتف */
+        input, select, button { touch-action: manipulation; }
     </style>
 
     <!-- React & ReactDOM (UMD) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel Standalone (for JSX) -->
+    <!-- Babel Standalone -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <!-- Firebase Compat SDKs -->
@@ -42,15 +46,13 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-900 selection:bg-emerald-100 selection:text-emerald-900">
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- 1. CONFIGURATION & DATA ---
+        // --- 1. الإعدادات والبيانات ---
         
-        // Firebase Config
         const firebaseConfig = {
           apiKey: "AIzaSyAXLSZ5OqPEOnP0DUx3w75fU2xxiVkrWcE",
           authDomain: "koooralaghouat.firebaseapp.com",
@@ -61,12 +63,14 @@
           measurementId: "G-4YSP7SWPGV"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        // تهيئة Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Constants (Teams Data)
+        // بيانات الفرق والدوريات
         const LEAGUES_DATA = {
             "الجهوي الأول (فوج أ)": [
                 { name: "ش ب عين اميناس", logo: "https://lrfouargla.com/uploads/images/logos/1(1).png" },
@@ -144,9 +148,9 @@
 
         const { useState, useEffect } = React;
 
-        // --- 2. COMPONENTS ---
+        // --- 2. المكونات (Components) ---
 
-        // Component: MatchRow (For Public List)
+        // بطاقة المباراة للجمهور
         const MatchRow = ({ match }) => {
             const isLive = match.status.includes('الشوط') && match.status !== 'نهاية الشوط الأول';
             const isEnded = match.status === 'نهاية المباراة';
@@ -178,12 +182,20 @@
 
             return (
                 <div className="p-4 hover:bg-gray-50 transition-colors flex flex-col md:flex-row items-center justify-between gap-4 relative">
-                    <div className="flex flex-row md:flex-col items-center justify-center gap-2 md:w-24 shrink-0 order-1 md:order-1 mb-2 md:mb-0">
+                    
+                    {/* --- إصلاح ظهور الجولة في الموبايل --- */}
+                    <div className="absolute top-2 left-2 md:hidden z-10">
+                        <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 shadow-sm">
+                            J-{match.round}
+                        </span>
+                    </div>
+
+                    <div className="flex flex-row md:flex-col items-center justify-center gap-2 md:w-24 shrink-0 order-1 md:order-1 mb-2 md:mb-0 w-full relative">
                         <div className={`px-2 py-1 rounded text-[10px] font-bold border ${statusBg} ${statusColor} ${statusBorder} text-center min-w-[70px]`}>
                             {match.status === 'لم تبدأ' ? 'Not Started' : match.status}
                         </div>
                         {isLive && (
-                            <div className="flex items-center gap-1 text-emerald-600">
+                            <div className="flex items-center gap-1 text-emerald-600 absolute md:static right-0 md:right-auto top-0 md:top-auto">
                                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-sm"></span>
                                 <span className="text-sm font-mono font-black tracking-wider">{currentTime}</span>
                             </div>
@@ -191,12 +203,12 @@
                     </div>
                     <div className="flex-1 flex items-center justify-between w-full md:w-auto px-2 order-2 md:order-2">
                         <div className="flex-1 flex items-center justify-end gap-3 text-right">
-                            <span className="font-bold text-gray-800 text-sm md:text-base leading-tight">{match.home}</span>
-                            <img src={match.homeLogo || "https://placehold.co/40x40?text=H"} className="w-10 h-10 object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.src = 'https://cdn-icons-png.flaticon.com/512/53/53283.png')} />
+                            <span className="font-bold text-gray-800 text-sm md:text-base leading-tight truncate pl-1">{match.home}</span>
+                            <img src={match.homeLogo || "https://placehold.co/40x40?text=H"} className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.src = 'https://cdn-icons-png.flaticon.com/512/53/53283.png')} />
                         </div>
-                        <div className="mx-4 md:mx-8 flex items-center justify-center min-w-[70px]">
+                        <div className="mx-2 md:mx-8 flex items-center justify-center min-w-[60px]">
                             {match.status !== 'لم تبدأ' ? (
-                                <div className="flex items-center gap-3 text-2xl font-black text-gray-800 bg-gray-100 px-4 py-1 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-2 md:gap-3 text-xl md:text-2xl font-black text-gray-800 bg-gray-100 px-3 md:px-4 py-1 rounded-lg border border-gray-200">
                                     <span>{match.scoreH}</span>
                                     <span className="text-gray-400 text-lg font-light">-</span>
                                     <span>{match.scoreA}</span>
@@ -206,8 +218,8 @@
                             )}
                         </div>
                         <div className="flex-1 flex items-center justify-start gap-3 text-left">
-                            <img src={match.awayLogo || "https://placehold.co/40x40?text=A"} className="w-10 h-10 object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.src = 'https://cdn-icons-png.flaticon.com/512/53/53283.png')} />
-                            <span className="font-bold text-gray-800 text-sm md:text-base leading-tight">{match.away}</span>
+                            <img src={match.awayLogo || "https://placehold.co/40x40?text=A"} className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-sm" onError={(e) => (e.currentTarget.src = 'https://cdn-icons-png.flaticon.com/512/53/53283.png')} />
+                            <span className="font-bold text-gray-800 text-sm md:text-base leading-tight truncate pr-1">{match.away}</span>
                         </div>
                     </div>
                     <div className="hidden md:block text-xs text-gray-400 w-24 text-left order-3">
@@ -217,7 +229,6 @@
             );
         };
 
-        // Component: MatchListPublic
         const MatchListPublic = ({ matches }) => {
             if (matches.length === 0) {
                 return (
@@ -252,7 +263,7 @@
             );
         };
 
-        // Component: AdminMatchCard
+        // بطاقة التحكم للمشرف (Admin)
         const AdminMatchCard = ({ match }) => {
             const [scoreH, setScoreH] = useState(match.scoreH);
             const [scoreA, setScoreA] = useState(match.scoreA);
@@ -297,6 +308,8 @@
                     let updateData = { scoreH: Number(scoreH), scoreA: Number(scoreA), scorersH, scorersA, status };
                     if (!match.isRunning) updateData.time = Number(editMinutes);
                     await db.collection("matches").doc(match.id).update(updateData);
+                    // وميض بسيط للتأكيد (اختياري)
+                    alert("✅ تم الحفظ"); 
                 } catch (e) { alert("خطأ"); }
             };
 
@@ -307,43 +320,72 @@
             };
 
             return (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-3">
-                     <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-400 text-center">{match.league} (الجولة {match.round})</div>
-                    <div className="p-2 flex flex-col md:flex-row items-center gap-2">
-                        <div className="flex gap-1 md:w-auto w-full justify-center md:order-1 order-3">
-                            <button onClick={handleDelete} className="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded transition shadow-sm">🗑</button>
-                            <button onClick={handleSave} className="w-8 h-8 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white rounded transition shadow-sm">💾</button>
-                        </div>
-                        <div className="flex items-center bg-gray-50 rounded border border-gray-200 px-2 py-1 gap-2 md:order-2 order-2">
-                            <span className="font-mono font-bold text-emerald-600 w-12 text-center text-sm">{displayTime}</span>
-                            <div className="flex gap-1">
-                                <button onClick={() => toggleTimer(false)} disabled={!match.isRunning} className={`w-6 h-6 flex items-center justify-center rounded text-white text-[10px] font-bold ${!match.isRunning ? 'bg-gray-300' : 'bg-orange-400 hover:bg-orange-500'}`}>||</button>
-                                <input type="number" value={editMinutes} onChange={(e) => setEditMinutes(Number(e.target.value))} className="w-8 text-center text-xs font-bold bg-white border border-gray-300 rounded h-6 outline-none" />
-                                <button onClick={() => toggleTimer(true)} disabled={match.isRunning} className={`w-6 h-6 flex items-center justify-center rounded text-white text-[10px] font-bold ${match.isRunning ? 'bg-gray-300' : 'bg-emerald-400 hover:bg-emerald-500'}`}>▶</button>
+                <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-6">
+                    {/* Header: League & Round */}
+                     <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center text-xs text-gray-600 font-medium">
+                        <span className="truncate">{match.league}</span>
+                        <span className="bg-white px-2 py-0.5 border rounded-md shadow-sm">الجولة {match.round}</span>
+                    </div>
+                    
+                    <div className="p-4 flex flex-col gap-4">
+                        
+                        {/* 1. Teams & Score Control (Big for Touch) */}
+                        <div className="flex items-center justify-between gap-2 bg-slate-50 p-3 rounded-xl border border-gray-200">
+                            {/* Home */}
+                            <div className="flex flex-col items-center w-20 text-center">
+                                <img src={match.homeLogo} className="w-10 h-10 object-contain mb-1" alt="" />
+                                <span className="text-[10px] font-bold text-gray-800 leading-tight line-clamp-2">{match.home}</span>
+                            </div>
+                            
+                            {/* Score Inputs */}
+                            <div className="flex items-center gap-3">
+                                <input type="number" value={scoreH} onChange={(e) => setScoreH(Number(e.target.value))} className="w-12 h-12 text-center font-bold border-2 border-gray-300 rounded-xl text-xl focus:border-emerald-500 outline-none bg-white shadow-sm" />
+                                <span className="text-gray-400 font-light text-xl">-</span>
+                                <input type="number" value={scoreA} onChange={(e) => setScoreA(Number(e.target.value))} className="w-12 h-12 text-center font-bold border-2 border-gray-300 rounded-xl text-xl focus:border-emerald-500 outline-none bg-white shadow-sm" />
+                            </div>
+
+                            {/* Away */}
+                            <div className="flex flex-col items-center w-20 text-center">
+                                <img src={match.awayLogo} className="w-10 h-10 object-contain mb-1" alt="" />
+                                <span className="text-[10px] font-bold text-gray-800 leading-tight line-clamp-2">{match.away}</span>
                             </div>
                         </div>
-                        <div className="md:order-3 order-1 w-full md:w-32">
-                            <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full h-8 text-xs border border-gray-200 rounded bg-white text-gray-700 outline-none">
-                                <option value="لم تبدأ">⭕ لم تبدأ</option>
-                                <option value="الشوط الأول">🟢 الشوط الأول</option>
-                                <option value="نهاية الشوط الأول">☕ استراحة</option>
-                                <option value="الشوط الثاني">🟢 الشوط الثاني</option>
-                                <option value="نهاية المباراة">🏁 انتهت</option>
-                            </select>
-                        </div>
-                        <div className="flex-1 flex items-center justify-between md:justify-end gap-2 md:order-4 order-1 w-full md:w-auto bg-white border md:border-none border-gray-100 p-2 md:p-0 rounded">
-                            <div className="flex items-center gap-2 justify-end flex-1 min-w-0">
-                                <span className="text-sm font-bold text-gray-800 truncate">{match.home}</span>
-                                <img src={match.homeLogo} className="w-6 h-6 object-contain" alt="" />
+
+                        {/* 2. Controls Row (Stacked on Mobile) */}
+                        <div className="flex flex-col gap-3">
+                            
+                            {/* Timer & Status Group */}
+                            <div className="flex gap-2">
+                                {/* Status Select */}
+                                <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-12 flex-1 text-sm font-medium border border-gray-300 rounded-lg bg-white text-gray-800 outline-none px-2 shadow-sm">
+                                    <option value="لم تبدأ">⭕ لم تبدأ</option>
+                                    <option value="الشوط الأول">🟢 الشوط الأول</option>
+                                    <option value="نهاية الشوط الأول">☕ استراحة</option>
+                                    <option value="الشوط الثاني">🟢 الشوط الثاني</option>
+                                    <option value="نهاية المباراة">🏁 انتهت</option>
+                                </select>
+
+                                {/* Timer Control */}
+                                <div className="flex items-center bg-gray-100 rounded-lg border border-gray-200 px-2 h-12 gap-1 shadow-sm">
+                                    <button onClick={() => toggleTimer(false)} disabled={!match.isRunning} className={`w-8 h-8 flex items-center justify-center rounded-md text-white font-bold shadow-sm ${!match.isRunning ? 'bg-gray-300' : 'bg-orange-500'}`}>||</button>
+                                    
+                                    <div className="flex flex-col items-center mx-1">
+                                        <span className="font-mono font-bold text-emerald-600 text-xs w-10 text-center leading-none mb-0.5">{displayTime}</span>
+                                        <input type="number" value={editMinutes} onChange={(e) => setEditMinutes(Number(e.target.value))} className="w-8 text-center text-[10px] font-bold bg-white border border-gray-300 rounded h-4 outline-none p-0" />
+                                    </div>
+                                    
+                                    <button onClick={() => toggleTimer(true)} disabled={match.isRunning} className={`w-8 h-8 flex items-center justify-center rounded-md text-white font-bold shadow-sm ${match.isRunning ? 'bg-gray-300' : 'bg-emerald-500'}`}>▶</button>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <input type="number" value={scoreH} onChange={(e) => setScoreH(Number(e.target.value))} className="w-10 h-8 text-center font-bold border border-gray-300 rounded text-lg focus:border-emerald-500 outline-none bg-gray-50" />
-                                <span className="text-gray-400">-</span>
-                                <input type="number" value={scoreA} onChange={(e) => setScoreA(Number(e.target.value))} className="w-10 h-8 text-center font-bold border border-gray-300 rounded text-lg focus:border-emerald-500 outline-none bg-gray-50" />
-                            </div>
-                            <div className="flex items-center gap-2 justify-start flex-1 min-w-0">
-                                <img src={match.awayLogo} className="w-6 h-6 object-contain" alt="" />
-                                <span className="text-sm font-bold text-gray-800 truncate">{match.away}</span>
+
+                            {/* Action Buttons (Full Width) */}
+                            <div className="flex gap-2">
+                                <button onClick={handleSave} className="flex-1 h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow font-bold text-sm gap-2">
+                                    <span>💾</span> حفظ التعديلات
+                                </button>
+                                <button onClick={handleDelete} className="w-14 h-10 flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 border border-red-200 rounded-lg shadow-sm font-bold">
+                                    <span>🗑</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -351,7 +393,7 @@
             );
         };
 
-        // --- 3. MAIN APP ---
+        // --- 3. التطبيق الرئيسي ---
 
         const App = () => {
             const [view, setView] = useState('public');
@@ -457,7 +499,7 @@
             }
 
             return (
-                <div className="min-h-screen bg-gray-50 pb-20">
+                <div className="min-h-screen bg-gray-50 pb-24"> {/* Added extra padding at bottom */}
                     <nav className="bg-white border-b border-gray-200 sticky top-0 z-40 px-6 py-3 shadow-sm">
                         <div className="max-w-6xl mx-auto flex justify-between items-center">
                             <h3 className="font-bold text-gray-800">لوحة الإدارة</h3>
@@ -472,27 +514,27 @@
                             <h4 className="text-emerald-600 font-bold mb-4">إضافة مباراة جديدة</h4>
                             <div className="flex flex-col gap-3">
                                 <div className="flex gap-3">
-                                    <select className="flex-1 p-2 bg-gray-50 border rounded text-sm" value={league} onChange={(e) => { setLeague(e.target.value); setHome(''); setAway(''); }}>
+                                    <select className="flex-1 p-2 bg-gray-50 border rounded text-sm h-10" value={league} onChange={(e) => { setLeague(e.target.value); setHome(''); setAway(''); }}>
                                         <option value="" disabled>-- اختر البطولة --</option>
                                         {Object.keys(LEAGUES_DATA).filter(k => k !== 'default').map(k => <option key={k} value={k}>{k}</option>)}
                                         <option value="شرفي الأغواط">شرفي الأغواط</option>
                                         <option value="ولائي الأغواط">ولائي الأغواط</option>
                                         <option value="كأس الجمهورية">كأس الجمهورية 🏆</option>
                                     </select>
-                                    <select className="w-1/3 p-2 bg-gray-50 border rounded text-sm" value={round} onChange={e => setRound(e.target.value)}>
-                                        {Array.from({length: 50}, (_, i) => i + 1).map(num => <option key={num} value={num}>الجولة {num}</option>)}
+                                    <select className="w-1/3 p-2 bg-gray-50 border rounded text-sm h-10" value={round} onChange={e => setRound(e.target.value)}>
+                                        {Array.from({length: 50}, (_, i) => i + 1).map(num => <option key={num} value={num}>ج-{num}</option>)}
                                     </select>
                                 </div>
-                                <div className="flex gap-3 items-end">
-                                    <select className="flex-1 p-2 bg-gray-50 border rounded text-sm" value={home} onChange={(e) => handleTeamSelect(true, e.target.value)}>
-                                        <option value="">اختر المستضيف</option>
+                                <div className="flex flex-col md:flex-row gap-3">
+                                    <select className="flex-1 p-2 bg-gray-50 border rounded text-sm h-10" value={home} onChange={(e) => handleTeamSelect(true, e.target.value)}>
+                                       <option value="">اختر المستضيف</option>
                                         {(LEAGUES_DATA[league] || LEAGUES_DATA['default']).map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
                                     </select>
-                                    <select className="flex-1 p-2 bg-gray-50 border rounded text-sm" value={away} onChange={(e) => handleTeamSelect(false, e.target.value)}>
+                                    <select className="flex-1 p-2 bg-gray-50 border rounded text-sm h-10" value={away} onChange={(e) => handleTeamSelect(false, e.target.value)}>
                                         <option value="">اختر الضيف</option>
                                         {(LEAGUES_DATA[league] || LEAGUES_DATA['default']).map(t => <option key={t.name} value={t.name}>{t.name}</option>)}
                                     </select>
-                                    <button onClick={handleAddMatch} className="w-32 py-2 bg-emerald-500 text-white rounded font-bold hover:bg-emerald-600 text-sm">نشر</button>
+                                    <button onClick={handleAddMatch} className="w-full md:w-32 py-2 bg-emerald-500 text-white rounded font-bold hover:bg-emerald-600 text-sm h-10">نشر</button>
                                 </div>
                             </div>
                         </div>
@@ -508,6 +550,5 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
