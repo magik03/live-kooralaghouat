@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أدمن - التحكم الذكي</title>
+    <title>أدمن - التحكم الكامل</title>
     <link rel="icon" href="https://i.top4top.io/p_3636li6n50.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -27,6 +27,9 @@
         .team-select-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
         .team-img-small { width: 45px; height: 45px; border-radius: 50%; object-fit: contain; border: 1px solid #eee; background: #fff; padding: 2px; }
         
+        .name-input { font-weight: bold; background-color: #f9fafb !important; }
+        .logo-input { font-size: 0.8rem; color: #888; padding: 8px !important; margin-bottom: 10px; }
+
         .timer-wrapper { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #cbd5e1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .timer-controls { display: flex; gap: 10px; width: 100%; }
         .btn-control { flex: 1; font-size: 0.9rem; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
@@ -254,6 +257,7 @@
                     <div class="edit-card">
                         <div style="text-align:center; font-weight:bold; color:#6b7280; margin-bottom:10px;">${m.league}</div>
 
+                        <!-- 1. تعديل الفرق -->
                         <div class="section-label">المستضيف (يمين)</div>
                         <div class="team-edit-row">
                             <img src="${m.homeLogo}" class="team-img-small">
@@ -283,4 +287,119 @@
                                 <span>ضبط الدقيقة:</span>
                                 <input type="number" id="tm-set-${id}" value="${minutes}" class="time-input" placeholder="00">
                             </div>
-                            <div class="timer-
+                            <div class="timer-controls">
+                                <button class="btn-control btn-start" onclick="window.toggleTimer('${id}', true, ${currentSeconds})" ${m.isRunning ? 'disabled style="opacity:0.5"' : ''}>تشغيل ▶</button>
+                                <button class="btn-control btn-stop" onclick="window.toggleTimer('${id}', false, ${currentSeconds})" ${!m.isRunning ? 'disabled style="opacity:0.5"' : ''}>إيقاف ⏸</button>
+                            </div>
+                            <div class="admin-live-timer" data-running="${m.isRunning}" data-start="${m.lastStartTime}" data-base="${m.elapsedSeconds}" style="font-weight:bold; color:#27ae60; margin-top:5px;">
+                                ${Math.floor(currentSeconds / 60).toString().padStart(2,'0')}:${Math.floor(currentSeconds % 60).toString().padStart(2,'0')}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top:10px;">
+                            <select id="st-${id}" style="font-weight:bold;">
+                                <option value="لم تبدأ" ${sel("لم تبدأ")}>⚪ لم تبدأ</option>
+                                <option value="الشوط الأول" ${sel("الشوط الأول")}>🟢 الشوط 1</option>
+                                <option value="نهاية الشوط الأول" ${sel("نهاية الشوط الأول")}>🟠 استراحة</option>
+                                <option value="الشوط الثاني" ${sel("الشوط الثاني")}>🟢 الشوط 2</option>
+                                <option value="نهاية المباراة" ${sel("نهاية المباراة")}>⚫ انتهت</option>
+                            </select>
+                        </div>
+
+                        <div class="btns-row">
+                            <button class="btn-save" onclick="window.upd('${id}', ${m.isRunning}, ${currentSeconds})">حفظ كل التعديلات</button>
+                            <button class="btn-del" onclick="window.del('${id}')">حذف</button>
+                        </div>
+                    </div>`;
+                });
+            });
+        }
+
+        window.toggleTimer = async (id, start, currentTotalSeconds) => {
+            const manualMinutes = Number(document.getElementById(`tm-set-${id}`).value);
+            let baseSeconds = currentTotalSeconds;
+            const displayedMinutes = Math.floor(currentTotalSeconds / 60);
+            
+            // إذا عدل الأدمن الدقيقة يدوياً قبل التشغيل
+            if (manualMinutes !== displayedMinutes) {
+                baseSeconds = manualMinutes * 60;
+            }
+
+            if(start) {
+                await updateDoc(doc(db, "matches", id), {
+                    isRunning: true, 
+                    lastStartTime: Date.now(), 
+                    elapsedSeconds: baseSeconds 
+                });
+            } else {
+                await updateDoc(doc(db, "matches", id), {
+                    isRunning: false, 
+                    lastStartTime: null, 
+                    elapsedSeconds: baseSeconds 
+                });
+            }
+        };
+
+        window.upd = async (id, isRunning, currentSeconds) => {
+            const status = document.getElementById(`st-${id}`).value;
+            let newIsRunning = isRunning;
+            let newElapsedSeconds = currentSeconds;
+
+            // ⚠️ منطق الإيقاف التلقائي عند اختيار "نهاية..." أو "استراحة"
+            if (status.includes("نهاية") || status.includes("استراحة")) {
+                newIsRunning = false;
+                // إذا كان الوقت يمشي، يجب حفظ قيمته الحالية عند التوقف
+                if(isRunning) {
+                    const now = Date.now();
+                    // نحسب الفرق منذ آخر تشغيل ونضيفه للأساس
+                    // (ملاحظة: نحتاج لجلب آخر بيانات لتكون دقيقة 100% لكن التقدير هنا جيد)
+                    // الأفضل الاعتماد على currentSeconds المحسوبة في الـ Snapshot
+                }
+            }
+
+            let updateData = {
+                home: document.getElementById(`hName-${id}`).value,
+                away: document.getElementById(`aName-${id}`).value,
+                homeLogo: document.getElementById(`hLogo-${id}`).value,
+                awayLogo: document.getElementById(`aLogo-${id}`).value,
+                scoreH: Number(document.getElementById(`sH-${id}`).value),
+                scoreA: Number(document.getElementById(`sA-${id}`).value),
+                scorersH: document.getElementById(`scH-${id}`).value,
+                scorersA: document.getElementById(`scA-${id}`).value,
+                status: status,
+                isRunning: newIsRunning // تحديث حالة التشغيل
+            };
+            
+            // إذا كان الوقت متوقفاً (يدوياً أو بسبب الحالة)، نأخذ القيمة من خانة الدقائق
+            if (!newIsRunning) {
+                const manualMinutes = Number(document.getElementById(`tm-set-${id}`).value);
+                updateData.elapsedSeconds = manualMinutes * 60;
+                updateData.lastStartTime = null; // تصفير وقت البدء
+            } 
+            // إذا كانت المباراة جارية وضغطنا حفظ فقط لتعديل النتيجة، يبقى الوقت كما هو
+
+            await updateDoc(doc(db, "matches", id), updateData);
+            alert("تم التحديث ✅");
+        };
+        
+        window.del = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "matches", id)); };
+
+        setInterval(() => {
+            const timers = document.querySelectorAll('.admin-live-timer');
+            const now = Date.now();
+            timers.forEach(timer => {
+                const isRunning = timer.getAttribute('data-running') === 'true';
+                if (isRunning) {
+                    const startTime = parseInt(timer.getAttribute('data-start'));
+                    const baseSeconds = parseInt(timer.getAttribute('data-base'));
+                    const totalSeconds = baseSeconds + (now - startTime) / 1000;
+                    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+                    const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+                    timer.innerText = `${m}:${s}`;
+                }
+            });
+        }, 1000);
+
+    </script>
+</body>
+</html>
