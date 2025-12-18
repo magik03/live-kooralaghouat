@@ -99,6 +99,7 @@
       const GraduationCap = (p) => <Icon {...p}><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></Icon>;
       const Save = (p) => <Icon {...p}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /></Icon>;
       const Mail = (p) => <Icon {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></Icon>;
+      const BookOpen = (p) => <Icon {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a4 4 0 0 0-4-4H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a4 4 0 0 1 4-4h6z"/></Icon>;
 
       const InputField = ({ label, name, value, onChange, type="text", required=false, options=null, maxLength=null, placeholder="", step="any" }) => (
         <div className="flex flex-col mb-4">
@@ -234,7 +235,33 @@
                       </div>
                     ))}
                   </div>
+
+                  <div className="md:col-span-3 mt-6">
+                    <InputField label="هل لديك شهادات عليا أخرى؟" name="hasOtherDegrees" required value={formData.hasOtherDegrees} onChange={handleChange} options={['نعم', 'لا']} />
+                    {formData.hasOtherDegrees === 'نعم' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/50 rounded-[2.5rem] border-2 border-blue-100 mt-4">
+                        <InputField label="اسم الشهادة" name="otherDegreeName" value={formData.otherDegreeName} onChange={handleChange} />
+                        <InputField label="التخصص" name="otherDegreeSpecialty" value={formData.otherDegreeSpecialty} onChange={handleChange} />
+                        <InputField label="الجهة المسلمة" name="otherDegreeIssuer" value={formData.otherDegreeIssuer} onChange={handleChange} />
+                      </div>
+                    )}
+                  </div>
                 </FormCard>
+
+                <FormCard title="المنشورات والأعمال المهنية" icon={<BookOpen />}>
+                    <div className="md:col-span-3">
+                      <InputField label="هل لديك منشورات أو أعمال مهنية (مقالات، ملتقيات، مجلات)؟" name="hasPublications" required value={formData.hasPublications} onChange={handleChange} options={['نعم', 'لا']} />
+                      {formData.hasPublications === 'نعم' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-dz-green/5 rounded-[2.5rem] border-2 border-dz-green/10 mt-4">
+                          <InputField label="طبيعة العمل أو الدراسة" name="pubNature" value={formData.pubNature} onChange={handleChange} placeholder="مقال، ملتقى وطني..." />
+                          <InputField label="تاريخ النشر" name="pubDate" type="date" value={formData.pubDate} onChange={handleChange} />
+                          <InputField label="المجلة أو الدورية" name="pubJournal" value={formData.pubJournal} onChange={handleChange} />
+                          <InputField label="عدد المجلة" name="pubIssue" value={formData.pubIssue} onChange={handleChange} />
+                          <div className="md:col-span-2"><InputField label="رابط النشر" name="pubLink" value={formData.pubLink} onChange={handleChange} /></div>
+                        </div>
+                      )}
+                    </div>
+                  </FormCard>
 
                 <FormCard title="الوضعية المهنية الحالية" icon={<Briefcase />}>
                   <div className="md:col-span-3">
