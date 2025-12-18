@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة تحكم المسؤول - نظام التوظيف</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Tajawal', 'sans-serif'] },
+            colors: {
+              'dz-green': '#008568',
+              'admin-blue': '#0f172a',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      .modal-overlay { background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(8px); }
+      .detail-card { background: #f8fafc; border-radius: 1rem; padding: 1.25rem; border: 2px solid #e2e8f0; }
+      .detail-label { font-size: 0.85rem; font-weight: 900; color: #475569; display: block; margin-bottom: 0.35rem; border-bottom: 1px solid #e2e8f0; }
+      .detail-value { font-size: 1.1rem; font-weight: 900; color: #000000; }
+    </style>
+  </head>
+  <body class="bg-slate-100 font-sans text-right text-slate-900">
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="typescript,react">
+      const { useState, useEffect } = React;
+
+      const Icon = ({ children, size = 20 }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          {children}
+        </svg>
+      );
+      const Eye = (p) => <Icon {...p}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></Icon>;
+      const Trash = (p) => <Icon {...p}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /></Icon>;
+
+      const App = () => {
+        const [submissions, setSubmissions] = useState([]);
+        const [selected, setSelected] = useState(null);
+
+        useEffect(() => {
+          const saved = localStorage.getItem('dz_recruitment_v18_shared');
+          if (saved) setSubmissions(JSON.parse(saved));
+        }, []);
+
+        const updateStatus = (id, s) => {
+          const updated = submissions.map(item => item.id === id ? {...item, status: s} : item);
+          setSubmissions(updated);
+          localStorage.setItem('dz_recruitment_v18_shared', JSON.stringify(updated));
+          if (selected && selected.id === id) setSelected({...selected, status: s});
+        };
+
+        const deleteEntry = (id) => {
+          if (confirm('حذف نهائي للملف؟')) {
+            const updated = submissions.filter(item => item.id !== id);
+            setSubmissions(updated);
+            localStorage.setItem('dz_recruitment_v18_shared', JSON.stringify(updated));
+          }
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col">
+            <header className="bg-admin-blue text-white p-6 shadow-2xl">
+              <div className="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 className="text-2xl font-black">لوحة التحكم الإدارية (التحقق من الملفات)</h1>
+                <div className="bg-dz-green px-6 py-2 rounded-full font-black">إجمالي الملفات: {submissions.length}</div>
+              </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto w-full p-12">
+              <div className="bg-white rounded-[3rem] shadow-2xl border-2 border-slate-200 overflow-hidden">
+                <table className="w-full text-right">
+                  <thead className="bg-slate-200">
+                    <tr>
+                      <th className="px-10 py-6 font-black">المترشح</th>
+                      <th className="px-10 py-6 font-black">الرتبة</th>
+                      <th className="px-10 py-6 font-black text-center">الحالة</th>
+                      <th className="px-10 py-6 font-black text-center">إجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y-2">
+                    {submissions.map(s => (
+                      <tr key={s.id} className="hover:bg-dz-green/5">
+                        <td className="px-10 py-8 font-black">{s.lastNameAr} {s.firstNameAr}</td>
+                        <td className="px-10 py-8 font-bold text-slate-600">{s.rank} - {s.teachingSubject}</td>
+                        <td className="px-10 py-8 text-center">
+                          <span className={`px-4 py-1 rounded-xl text-xs font-black border-2 ${
+                            s.status === 'مقبول' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                            s.status === 'مرفوض' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-yellow-50 text-yellow-800 border-yellow-200'
+                          }`}>
+                            {s.status}
+                          </span>
+                        </td>
+                        <td className="px-10 py-8 flex justify-center gap-3">
+                          <button onClick={() => setSelected(s)} className="p-3 bg-admin-blue text-white rounded-xl shadow-md"><Eye/></button>
+                          <button onClick={() => deleteEntry(s.id)} className="p-3 bg-red-50 text-red-600 rounded-xl border border-red-100"><Trash/></button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </main>
+
+            {selected && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay">
+                <div className="bg-white rounded-[3.5rem] w-full max-w-6xl max-h-[92vh] overflow-y-auto shadow-2xl border-4 border-slate-200 p-12">
+                  <div className="flex justify-between items-center mb-10 border-b-4 pb-6 border-slate-50">
+                    <h3 className="text-3xl font-black">معاينة ملف: {selected.lastNameAr} {selected.firstNameAr}</h3>
+                    <button onClick={() => setSelected(null)} className="text-4xl text-slate-300 hover:text-red-600">&times;</button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <DetailBlock label="الرتبة المطلوبة" value={selected.rank} />
+                    <DetailBlock label="المادة" value={selected.teachingSubject} />
+                    <DetailBlock label="NIN" value={selected.nin} />
+                    <DetailBlock label="الهاتف" value={selected.phone} />
+                    <DetailBlock label="البريد الشخصي" value={selected.email} />
+                  </div>
+
+                  {selected.hasJob === 'نعم' && (
+                    <div className="bg-blue-50/50 p-8 rounded-[2.5rem] border-2 border-blue-100 mb-10">
+                      <h4 className="font-black text-blue-800 mb-6 text-xl">الوظيفة الحالية:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <DetailBlock label="الرتبة" value={selected.currentJobRank} />
+                        <DetailBlock label="تاريخ التعيين" value={selected.firstAppointDate} />
+                        <DetailBlock label="الصنف" value={selected.category} />
+                        <DetailBlock label="الإدارة" value={selected.adminName} />
+                        <DetailBlock label="هاتف الإدارة" value={selected.adminPhone} />
+                        <DetailBlock label="بريد الإدارة" value={selected.adminEmail} />
+                        <div className="md:col-span-3"><DetailBlock label="العنوان" value={selected.adminAddress} /></div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-center gap-6 mt-16 border-t-2 pt-10">
+                    <button onClick={() => updateStatus(selected.id, 'مقبول')} className="px-16 py-5 bg-dz-green text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-all">قبول الملف</button>
+                    <button onClick={() => updateStatus(selected.id, 'مرفوض')} className="px-16 py-5 bg-red-600 text-white font-black rounded-2xl shadow-xl hover:scale-105 transition-all">رفض الملف</button>
+                    <button onClick={() => setSelected(null)} className="px-16 py-5 bg-slate-200 font-black rounded-2xl">إغلاق</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      const DetailBlock = ({ label, value }) => (
+        <div className="detail-card">
+          <span className="detail-label">{label}</span>
+          <span className="detail-value">{value || '---'}</span>
+        </div>
+      );
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>

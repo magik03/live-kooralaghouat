@@ -1,1 +1,1 @@
-// This file is no longer needed as the application is bundled in index.html
+// Content moved to index.html
