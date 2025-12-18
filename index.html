@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>لوحة التحكم - الإصدار الثابت</title>
+    <title>لوحة التحكم الاحترافية - إدارة المسابقات</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,12 +17,14 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: #f8fafc; }
+        body { font-family: 'Tajawal', sans-serif; background: #f1f5f9; }
         .sidebar-btn { @apply flex items-center justify-between w-full p-4 rounded-2xl font-bold transition-all mb-2; }
-        .tab-active { @apply bg-blue-600 text-white shadow-xl; }
-        .tab-inactive { @apply text-slate-500 hover:bg-white hover:text-blue-600 border border-transparent hover:border-blue-100; }
-        input, select { @apply w-full p-3 rounded-xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all font-bold; }
-        .field-card { @apply bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative transition-all hover:shadow-md; }
+        .tab-active { @apply bg-blue-600 text-white shadow-lg; }
+        .tab-inactive { @apply text-slate-500 hover:bg-white hover:text-blue-600; }
+        .field-card { @apply bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative transition-all; }
+        input, select { @apply w-full p-3 rounded-xl border-2 border-slate-100 focus:border-blue-500 outline-none font-bold text-slate-700; }
+        table th { @apply text-right p-4 text-slate-400 font-bold text-xs uppercase bg-slate-50; }
+        table td { @apply p-4 text-slate-700 border-t border-slate-50; }
     </style>
 </head>
 <body>
@@ -31,15 +33,14 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- إعدادات Firebase الخاصة بك ---
+        // إعدادات Firebase
         const firebaseConfig = {
           apiKey: "AIzaSyBdlRDPTQqY8lZvD4R7nneXAwPgRbxmm14",
           authDomain: "councour-59e43.firebaseapp.com",
           projectId: "councour-59e43",
           storageBucket: "councour-59e43.firebasestorage.app",
           messagingSenderId: "492907661374",
-          appId: "1:492907661374:web:31792fc3ab95d0e69ea96f",
-          measurementId: "G-2NLB5H3NQH"
+          appId: "1:492907661374:web:31792fc3ab95d0e69ea96f"
         };
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -52,52 +53,35 @@
             const [navigation, setNavigation] = useState([]);
             const [fields, setFields] = useState({});
 
-            // الأزرار الافتراضية في حال كانت القاعدة فارغة
-            const defaultTabs = [
-                { id: 'candidates', label: 'المترشحين', icon: 'fa-users' },
-                { id: 'manage-fields', label: 'تعديل الحقول', icon: 'fa-address-card' },
-                { id: 'manage-tabs', label: 'إدارة الأزرار', icon: 'fa-square-plus' }
-            ];
-
             useEffect(() => {
                 auth.onAuthStateChanged(user => setIsLoggedIn(!!user));
                 
-                // جلب الأزرار مع ميزة الإنشاء التلقائي
-                const unsubNav = db.collection("settings").doc("navigation").onSnapshot(doc => {
-                    if (doc.exists && doc.data().list && doc.data().list.length > 0) {
-                        setNavigation(doc.data().list);
-                    } else {
-                        // إذا لم تكن هناك أزرار، قم بإنشائها فوراً
-                        db.collection("settings").doc("navigation").set({ list: defaultTabs });
-                        setNavigation(defaultTabs);
-                    }
+                // جلب قائمة الأزرار
+                db.collection("settings").doc("navigation").onSnapshot(doc => {
+                    if (doc.exists) setNavigation(doc.data().list || []);
                 });
 
-                // جلب الحقول
-                const unsubFields = db.collection("settings").doc("fields").onSnapshot(doc => {
+                // جلب إعدادات الحقول
+                db.collection("settings").doc("fields").onSnapshot(doc => {
                     if (doc.exists) setFields(doc.data());
                 });
-
-                return () => { unsubNav(); unsubFields(); };
             }, []);
 
             return (
                 <div className="min-h-screen flex flex-col">
-                    <nav className="h-16 bg-white border-b px-8 flex justify-between items-center sticky top-0 z-50">
-                        <div className="flex items-center gap-2">
-                            <i className="fa-solid fa-microchip text-blue-600 text-xl"></i>
-                            <h1 className="font-black text-slate-800">نظام إدارة المسابقات</h1>
+                    <header className="h-20 bg-white/80 backdrop-blur-md border-b px-8 flex justify-between items-center sticky top-0 z-50">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                <i className="fa-solid fa-layer-group text-lg"></i>
+                            </div>
+                            <h1 className="font-black text-xl text-slate-800 tracking-tight">نظام المسابقات <span className="text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded-lg mr-2 uppercase">v2.0</span></h1>
                         </div>
-                        <button onClick={() => setView(view === 'user' ? 'admin' : 'user')} className="bg-slate-100 px-4 py-2 rounded-xl font-bold text-xs hover:bg-slate-200 transition">
-                            {view === 'user' ? 'لوحة التحكم' : 'عرض الموقع'}
+                        <button onClick={() => setView(view === 'user' ? 'admin' : 'user')} className="bg-slate-900 text-white px-6 py-2.5 rounded-2xl font-bold text-sm hover:scale-105 transition-all active:scale-95 shadow-xl shadow-slate-200">
+                            {view === 'user' ? 'لوحة المسؤول' : 'عرض الموقع'}
                         </button>
-                    </nav>
+                    </header>
 
-                    {view === 'user' ? (
-                        <UserView fields={fields} />
-                    ) : (
-                        isLoggedIn ? <AdminDashboard fields={fields} navigation={navigation} /> : <AdminLogin />
-                    )}
+                    {view === 'user' ? <UserView fields={fields} /> : (isLoggedIn ? <AdminDashboard fields={fields} navigation={navigation} /> : <AdminLogin />)}
                 </div>
             );
         };
@@ -115,34 +99,36 @@
 
             return (
                 <div className="flex flex-1 flex-col md:flex-row">
-                    <aside className="w-full md:w-72 bg-slate-50 border-l p-6">
-                        <p className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest">القائمة الرئيسية</p>
-                        {navigation.map(tab => (
-                            <button 
-                                key={tab.id} 
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`sidebar-btn ${activeTab === tab.id ? 'tab-active' : 'tab-inactive'}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <i className={`fa-solid ${tab.icon}`}></i>
-                                    {tab.label}
-                                </div>
-                            </button>
-                        ))}
-                        <button onClick={() => auth.signOut()} className="sidebar-btn text-red-500 mt-10 hover:bg-red-50">
-                            <i className="fa-solid fa-power-off"></i> تسجيل الخروج
+                    <aside className="w-full md:w-80 bg-white border-l p-6">
+                        <div className="mb-8">
+                            <p className="text-[11px] font-black text-slate-400 mb-6 uppercase tracking-[0.2em]">الإدارة والتحكم</p>
+                            <nav className="space-y-1">
+                                {navigation.map(tab => (
+                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`sidebar-btn ${activeTab === tab.id ? 'tab-active' : 'tab-inactive'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <i className={`fa-solid ${tab.icon} w-5`}></i>
+                                            <span>{tab.label}</span>
+                                        </div>
+                                        {tab.id === 'candidates' && <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">{candidates.length}</span>}
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                        <button onClick={() => auth.signOut()} className="sidebar-btn text-red-500 hover:bg-red-50 mt-auto border border-transparent hover:border-red-100">
+                            <div className="flex items-center gap-3"><i className="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</div>
                         </button>
                     </aside>
 
-                    <main className="flex-1 p-8">
-                        {activeTab === 'candidates' && <CandidatesTable data={candidates} />}
+                    <main className="flex-1 p-8 overflow-y-auto">
+                        {activeTab === 'candidates' && <CandidatesManager data={candidates} fields={fields} />}
                         {activeTab === 'manage-fields' && <FieldsManager fields={fields} />}
                         {activeTab === 'manage-tabs' && <TabsManager navigation={navigation} />}
                         
-                        {/* عرض محتوى بسيط للتبويبات الجديدة التي يضيفها المستخدم */}
                         {!['candidates', 'manage-fields', 'manage-tabs'].includes(activeTab) && (
-                            <div className="bg-white p-20 rounded-3xl text-center shadow-sm">
-                                <h2 className="text-2xl font-black text-slate-300">هذا التبويب مخصص لـ "{navigation.find(t=>t.id===activeTab)?.label}"</h2>
+                            <div className="bg-white p-20 rounded-[3rem] text-center border-2 border-dashed border-slate-200">
+                                <i className={`fa-solid ${navigation.find(t=>t.id===activeTab)?.icon} text-6xl text-slate-200 mb-6`}></i>
+                                <h2 className="text-2xl font-black text-slate-400">قسم: {navigation.find(t=>t.id===activeTab)?.label}</h2>
+                                <p className="text-slate-400 mt-2">هذا التبويب متاح حالياً للتوسعة البرمجية</p>
                             </div>
                         )}
                     </main>
@@ -150,39 +136,111 @@
             );
         };
 
+        const CandidatesManager = ({ data, fields }) => {
+            // استخراج كافة الأعمدة بناءً على الحقول المفعلة
+            const columns = Object.keys(fields).filter(key => fields[key].active);
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <h2 className="text-3xl font-black text-slate-800">قائمة المترشحين</h2>
+                            <p className="text-slate-500 mt-1 font-medium">عرض كافة البيانات المستلمة من الاستمارة بشكل تلقائي</p>
+                        </div>
+                        <div className="bg-white p-2 rounded-2xl shadow-sm border flex gap-4 text-sm font-bold">
+                            <div className="px-4 py-2 border-l text-blue-600">إجمالي الطلبات: {data.length}</div>
+                            <button className="px-4 py-2 text-green-600 hover:bg-green-50 rounded-xl transition"><i className="fa-solid fa-file-excel ml-2"></i> تصدير Excel</button>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr>
+                                        {columns.map(col => (
+                                            <th key={col} className="whitespace-nowrap">{fields[col].label}</th>
+                                        ))}
+                                        <th className="text-center">تاريخ التقديم</th>
+                                        <th className="text-center">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.map(item => (
+                                        <tr key={item.id} className="hover:bg-blue-50/30 transition-colors group">
+                                            {columns.map(col => (
+                                                <td key={col} className="font-bold text-slate-600">
+                                                    {item[col] || <span className="text-slate-300 font-normal italic">لا يوجد</span>}
+                                                </td>
+                                            ))}
+                                            <td className="text-center">
+                                                <span className="text-[10px] font-black bg-slate-100 px-2 py-1 rounded-lg text-slate-500 uppercase">
+                                                    {item.submittedAt ? new Date(item.submittedAt.seconds * 1000).toLocaleDateString('ar-EG') : '...'}
+                                                </span>
+                                            </td>
+                                            <td className="text-center">
+                                                <button onClick={() => { if(confirm("حذف الطلب نهائياً؟")) db.collection("candidates").doc(item.id).delete() }} className="w-10 h-10 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition-all opacity-0 group-hover:opacity-100">
+                                                    <i className="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {data.length === 0 && (
+                                        <tr>
+                                            <td colSpan={columns.length + 2} className="p-20 text-center text-slate-400 font-bold">لا يوجد مترشحين مسجلين حالياً</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const FieldsManager = ({ fields }) => {
             const [newK, setNewK] = useState('');
             const save = (d) => db.collection("settings").doc("fields").set(d);
-            const update = (k, p, v) => { save({ ...fields, [k]: { ...fields[k], [p]: v } }); };
+            const update = (k, p, v) => save({ ...fields, [k]: { ...fields[k], [p]: v } });
             
             return (
-                <div>
+                <div className="max-w-5xl">
                     <div className="flex justify-between items-center mb-10">
-                        <h2 className="text-2xl font-black">تنسيق الاستمارة</h2>
-                        <div className="flex gap-2 bg-white p-2 rounded-2xl border shadow-sm">
-                            <input placeholder="اسم الحقل (id)..." className="!border-none w-40" value={newK} onChange={e=>setNewK(e.target.value)} />
-                            <button onClick={()=>{ if(newK) { save({...fields, [newK]: {label:'حقل جديد', placeholder:'...', icon:'fa-star', iconColor:'#3b82f6', active:true, rule:'any'}}); setNewK(''); } }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold">+ إضافة حقل</button>
+                        <div>
+                            <h2 className="text-3xl font-black text-slate-800">تنسيق الاستمارة</h2>
+                            <p className="text-slate-500 mt-1 font-medium">تحكم في الحقول التي تظهر للمترشح وفي جدول البيانات</p>
+                        </div>
+                        <div className="flex gap-2 bg-white p-3 rounded-2xl shadow-lg border-2 border-blue-50">
+                            <input placeholder="كود الحقل (مثال: phone)" className="!border-none !p-2 w-48 text-sm" value={newK} onChange={e=>setNewK(e.target.value)} />
+                            <button onClick={()=>{ if(newK) { save({...fields, [newK]: {label:'اسم الحقل الجديد', placeholder:'أدخل البيانات...', icon:'fa-star', iconColor:'#3b82f6', active:true, rule:'any'}}); setNewK(''); } }} className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-200">+ إضافة</button>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {Object.keys(fields).map(key => (
-                            <div key={key} className="field-card border-t-4" style={{borderColor: fields[key].iconColor}}>
+                            <div key={key} className="field-card group border-r-4" style={{borderRightColor: fields[key].iconColor}}>
                                 <div className="flex justify-between items-center mb-6">
-                                    <input type="checkbox" className="w-5 h-5" checked={fields[key].active} onChange={e => update(key, 'active', e.target.checked)} />
-                                    <span className="font-black text-slate-700">حقل: {key}</span>
-                                    <button onClick={()=>{ if(confirm("حذف؟")) { const n={...fields}; delete n[key]; save(n); } }} className="text-red-400"><i className="fa-solid fa-trash-can"></i></button>
+                                    <label className="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" className="w-5 h-5 accent-blue-600" checked={fields[key].active} onChange={e => update(key, 'active', e.target.checked)} />
+                                        <span className="font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-lg text-xs">{key}</span>
+                                    </label>
+                                    <button onClick={()=>{ if(confirm("حذف الحقل؟ سيختفي من الجدول أيضاً")) { const n={...fields}; delete n[key]; save(n); } }} className="text-slate-300 hover:text-red-500 transition-colors"><i className="fa-solid fa-circle-xmark text-xl"></i></button>
                                 </div>
                                 <div className="space-y-4">
-                                    <input value={fields[key].label} onChange={e => update(key, 'label', e.target.value)} placeholder="التسمية" />
-                                    <input value={fields[key].placeholder} onChange={e => update(key, 'placeholder', e.target.value)} placeholder="نص المساعدة" />
-                                    <select value={fields[key].rule || 'any'} onChange={e => update(key, 'rule', e.target.value)}>
-                                        <option value="any">نص حر</option>
-                                        <option value="numbers">أرقام فقط</option>
-                                        <option value="letters">حروف فقط</option>
-                                    </select>
-                                    <div className="flex gap-2 items-center">
-                                        <input value={fields[key].icon} onChange={e => update(key, 'icon', e.target.value)} className="font-mono text-xs" />
-                                        <input type="color" value={fields[key].iconColor} onChange={e => update(key, 'iconColor', e.target.value)} className="w-10 h-10 !p-0 border-none cursor-pointer" />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><label className="text-[10px] font-bold text-slate-400 block mb-1 mr-1">تسمية الحقل</label><input value={fields[key].label} onChange={e => update(key, 'label', e.target.value)} /></div>
+                                        <div><label className="text-[10px] font-bold text-slate-400 block mb-1 mr-1">قاعدة الإدخال</label>
+                                            <select value={fields[key].rule || 'any'} onChange={e => update(key, 'rule', e.target.value)}>
+                                                <option value="any">نص حر</option>
+                                                <option value="numbers">أرقام فقط</option>
+                                                <option value="letters">حروف فقط</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div><label className="text-[10px] font-bold text-slate-400 block mb-1 mr-1">نص المساعدة (Placeholder)</label><input value={fields[key].placeholder} onChange={e => update(key, 'placeholder', e.target.value)} /></div>
+                                    <div className="flex gap-4 p-4 bg-slate-50 rounded-2xl">
+                                        <div className="flex-1"><label className="text-[10px] font-bold text-slate-400 block mb-1">أيقونة (FontAwesome)</label><input value={fields[key].icon} onChange={e => update(key, 'icon', e.target.value)} className="font-mono text-xs" /></div>
+                                        <div><label className="text-[10px] font-bold text-slate-400 block mb-1">اللون</label><input type="color" value={fields[key].iconColor} onChange={e => update(key, 'iconColor', e.target.value)} className="w-12 h-11 !p-1 border-none cursor-pointer bg-transparent" /></div>
                                     </div>
                                 </div>
                             </div>
@@ -198,29 +256,31 @@
             const [temp, setTemp] = useState({});
 
             return (
-                <div className="bg-white p-8 rounded-3xl shadow-sm border max-w-4xl">
-                    <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-xl font-black">إدارة أزرار القائمة</h2>
-                        <button onClick={()=>{ const n=prompt("الاسم:"); if(n) save([...navigation, {id:'t'+Date.now(), label:n, icon:'fa-star'}]); }} className="bg-green-600 text-white px-6 py-2 rounded-xl">+ إضافة زر</button>
+                <div className="max-w-3xl bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+                    <div className="flex justify-between items-center mb-10">
+                        <h2 className="text-2xl font-black text-slate-800">إدارة التبويبات</h2>
+                        <button onClick={()=>{ const n=prompt("اسم التبويب الجديد:"); if(n) save([...navigation, {id:'t'+Date.now(), label:n, icon:'fa-star'}]); }} className="bg-slate-900 text-white px-6 py-2.5 rounded-2xl font-bold">+ إضافة زر جديد</button>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {navigation.map(tab => (
-                            <div key={tab.id} className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+                            <div key={tab.id} className="group flex justify-between items-center p-5 bg-slate-50 rounded-3xl border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-md transition-all">
                                 {editing === tab.id ? (
-                                    <div className="flex gap-2 w-full">
-                                        <input value={temp.label} onChange={e=>setTemp({...temp, label:e.target.value})} />
-                                        <input value={temp.icon} onChange={e=>setTemp({...temp, icon:e.target.value})} />
-                                        <button onClick={()=>{ save(navigation.map(t=>t.id===editing?temp:t)); setEditing(null); }} className="bg-blue-600 text-white px-4 rounded-xl">حفظ</button>
+                                    <div className="flex gap-3 w-full">
+                                        <input className="flex-1" value={temp.label} onChange={e=>setTemp({...temp, label:e.target.value})} />
+                                        <input className="w-32" value={temp.icon} onChange={e=>setTemp({...temp, icon:e.target.value})} />
+                                        <button onClick={()=>{ save(navigation.map(t=>t.id===editing?temp:t)); setEditing(null); }} className="bg-blue-600 text-white px-6 rounded-2xl font-bold">حفظ</button>
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="flex items-center gap-4 font-bold">
-                                            <i className={`fa-solid ${tab.icon} text-blue-600`}></i>
-                                            {tab.label}
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                <i className={`fa-solid ${tab.icon} text-lg`}></i>
+                                            </div>
+                                            <span className="font-black text-slate-700 text-lg">{tab.label}</span>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={()=>{ setEditing(tab.id); setTemp(tab); }} className="text-blue-500 p-2"><i className="fa-solid fa-pen"></i></button>
-                                            {tab.id !== 'candidates' && <button onClick={()=>save(navigation.filter(t=>t.id!==tab.id))} className="text-red-500 p-2"><i className="fa-solid fa-trash"></i></button>}
+                                            <button onClick={()=>{ setEditing(tab.id); setTemp(tab); }} className="w-10 h-10 rounded-xl text-blue-500 hover:bg-blue-50"><i className="fa-solid fa-pen-to-square"></i></button>
+                                            {tab.id !== 'candidates' && <button onClick={()=>save(navigation.filter(t=>t.id!==tab.id))} className="w-10 h-10 rounded-xl text-red-500 hover:bg-red-50"><i className="fa-solid fa-trash"></i></button>}
                                         </div>
                                     </>
                                 )}
@@ -231,62 +291,85 @@
             );
         };
 
-        const CandidatesTable = ({ data }) => (
-            <div className="bg-white rounded-3xl shadow-sm overflow-hidden border">
-                <table className="w-full text-right">
-                    <thead className="bg-slate-900 text-white">
-                        <tr><th className="p-4">المترشح</th><th className="p-4">التفاصيل</th><th className="p-4 text-center">إجراء</th></tr>
-                    </thead>
-                    <tbody>
-                        {data.map(c => (
-                            <tr key={c.id} className="border-b hover:bg-slate-50">
-                                <td className="p-4 font-bold">{c.firstName} {c.lastName}</td>
-                                <td className="p-4 text-sm font-mono">{c.nin} | {c.phone}</td>
-                                <td className="p-4 text-center">
-                                    <button onClick={()=>db.collection("candidates").doc(c.id).delete()} className="text-red-500"><i className="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
-
         const UserView = ({ fields }) => {
-            const [f, setF] = useState({});
-            const handleIn = (k, v, r) => {
-                let val = v;
-                if (r === 'numbers') val = v.replace(/\D/g, '');
-                if (r === 'letters') val = v.replace(/[0-9]/g, '');
-                setF({...f, [k]: val});
+            const [formData, setFormData] = useState({});
+            const [loading, setLoading] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                try {
+                    await db.collection("candidates").add({
+                        ...formData,
+                        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert("تم إرسال طلبك بنجاح!");
+                    setFormData({});
+                } catch (err) {
+                    alert("حدث خطأ أثناء الإرسال");
+                }
+                setLoading(false);
             };
+
+            const handleInput = (key, val, rule) => {
+                let cleanVal = val;
+                if (rule === 'numbers') cleanVal = val.replace(/\D/g, '');
+                if (rule === 'letters') cleanVal = val.replace(/[0-9]/g, '');
+                setFormData({...formData, [key]: cleanVal});
+            };
+
             return (
-                <div className="max-w-xl mx-auto py-16 px-4">
-                    <form onSubmit={async(e)=>{e.preventDefault(); await db.collection("candidates").add({...f, submittedAt: firebase.firestore.FieldValue.serverTimestamp()}); alert("تم!");}} className="bg-white p-12 rounded-[3rem] shadow-2xl space-y-6">
-                        <h2 className="text-2xl font-black text-center mb-8">استمارة الترشح</h2>
-                        {Object.keys(fields).map(key => fields[key].active && (
-                            <div key={key}>
-                                <label className="text-xs font-black text-slate-500 mb-1 block mr-2">{fields[key].label}</label>
-                                <div className="relative">
-                                    <i className={`fa-solid ${fields[key].icon} absolute right-4 top-1/2 -translate-y-1/2`} style={{color: fields[key].iconColor}}></i>
-                                    <input value={f[key]||''} placeholder={fields[key].placeholder} className="!pr-12 !py-4" onChange={e=>handleIn(key, e.target.value, fields[key].rule)} />
+                <div className="max-w-2xl mx-auto py-20 px-6">
+                    <form onSubmit={handleSubmit} className="bg-white p-12 rounded-[4rem] shadow-2xl shadow-blue-100/50 space-y-8 relative overflow-hidden border border-white">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                        <div className="text-center">
+                            <h2 className="text-4xl font-black text-slate-800 mb-2 font-tajawal">استمارة التسجيل</h2>
+                            <p className="text-slate-400 font-medium italic">يرجى ملء كافة البيانات المطلوبة بدقة</p>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {Object.keys(fields).map(key => fields[key].active && (
+                                <div key={key} className="space-y-2 group">
+                                    <label className="text-sm font-black text-slate-600 mr-2 flex items-center gap-2 group-focus-within:text-blue-600 transition-colors">
+                                        <i className={`fa-solid ${fields[key].icon}`} style={{color: fields[key].iconColor}}></i>
+                                        {fields[key].label}
+                                    </label>
+                                    <div className="relative">
+                                        <input 
+                                            required
+                                            value={formData[key] || ''} 
+                                            placeholder={fields[key].placeholder} 
+                                            className="!pr-6 !py-4 shadow-sm hover:shadow-md transition-shadow"
+                                            onChange={e => handleInput(key, e.target.value, fields[key].rule)} 
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                        <button className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black shadow-xl">إرسال</button>
+                            ))}
+                        </div>
+
+                        <button disabled={loading} className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xl shadow-2xl hover:bg-blue-600 hover:-translate-y-1 transition-all active:scale-95 disabled:bg-slate-300">
+                            {loading ? <i className="fa-solid fa-spinner fa-spin ml-2"></i> : 'إرسال الترشح الآن'}
+                        </button>
                     </form>
                 </div>
             );
         };
 
         const AdminLogin = () => {
-            const [e, setE] = useState(''); const [p, setP] = useState('');
+            const [email, setEmail] = useState('');
+            const [pass, setPass] = useState('');
             return (
-                <div className="max-w-md mx-auto mt-24 p-10 bg-white rounded-3xl shadow-xl">
-                    <form onSubmit={async(x)=>{x.preventDefault(); await auth.signInWithEmailAndPassword(e, p);}} className="space-y-4">
-                        <input type="email" placeholder="البريد" onChange={v=>setE(v.target.value)} />
-                        <input type="password" placeholder="السر" onChange={v=>setP(v.target.value)} />
-                        <button className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold">دخول</button>
+                <div className="max-w-md mx-auto mt-32 p-12 bg-white rounded-[3rem] shadow-2xl border border-slate-100">
+                    <div className="text-center mb-10">
+                        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                            <i className="fa-solid fa-lock"></i>
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-800">تسجيل دخول المسؤول</h2>
+                    </div>
+                    <form onSubmit={async(e)=>{e.preventDefault(); try{await auth.signInWithEmailAndPassword(email, pass)}catch(err){alert("خطأ في البيانات")}} } className="space-y-4">
+                        <input type="email" placeholder="البريد الإلكتروني" className="!bg-slate-50" onChange={e=>setEmail(e.target.value)} />
+                        <input type="password" placeholder="كلمة المرور" className="!bg-slate-50" onChange={e=>setPass(e.target.value)} />
+                        <button className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-blue-100 mt-4">دخول</button>
                     </form>
                 </div>
             );
