@@ -29,7 +29,7 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .section-header {
-            background-color: #f1f5f9;
+            background-background-78color: #f1f5f9;
             padding: 0.75rem 1rem;
             border-right: 4px solid #1e293b;
             font-weight: 800;
@@ -157,7 +157,6 @@
                 e.preventDefault();
                 setIsSubmitting(true);
                 
-                // تحويل بيانات الفصول الدراسية إلى نص مقروء لإرساله في الإيميل
                 const semesterSummary = formData.semesters.map((s, i) => 
                     `سنة ${i+1}: (س1: ${s.s1}, س2: ${s.s2}, سنوي: ${s.annual})`
                 ).join(' | ');
@@ -167,11 +166,12 @@
                     semesters_summary: semesterSummary,
                     _subject: `طلب مشاركة جديد: ${formData.firstNameAr} ${formData.lastNameAr}`,
                     _template: "table",
-                    _captcha: "false" // لتعطيل صفحة التحقق وضمان الإرسال المباشر
+                    _captcha: "false"
                 };
 
                 try {
-                    const response = await fetch("https://formsubmit.co/ajax/ksarinfo.impr@gmail.com", {
+                    // استخدام الرمز (Token) المستخرج من الصورة لضمان التفعيل
+                    const response = await fetch("https://formsubmit.co/ajax/1fd22e0deb7f40328f236bd42622579f", {
                         method: "POST",
                         headers: { "Content-Type": "application/json", "Accept": "application/json" },
                         body: JSON.stringify(payload)
@@ -180,10 +180,10 @@
                     if (response.ok) {
                         setSubmitted(true);
                     } else {
-                        alert("حدث خطأ في الإرسال. تأكد من تفعيل خدمة FormSubmit من بريدك أولاً.");
+                        alert("حدث خطأ في الإرسال. تأكد من ضغطك على زر ACTIVATE FORM في الإيميل.");
                     }
                 } catch (error) {
-                    alert("فشل الاتصال بالخادم. يرجى التحقق من الإنترنت.");
+                    alert("فشل الاتصال بالخادم.");
                 } finally {
                     setIsSubmitting(false);
                 }
@@ -195,7 +195,7 @@
                         <div className="bg-white p-10 rounded-xl shadow-2xl max-w-md w-full border-t-8 border-green-500 animate-fade-in">
                             <div className="text-green-500 text-6xl mb-4">✓</div>
                             <h1 className="text-2xl font-black text-gray-800 mb-2">تم الإرسال بنجاح!</h1>
-                            <p className="text-gray-600 mb-6 font-bold">لقد تم إرسال كافة بياناتك إلى البريد الإلكتروني المخصص بنجاح.</p>
+                            <p className="text-gray-600 mb-6 font-bold">لقد تم إرسال كافة بياناتك بنجاح. شكراً لك.</p>
                             <button onClick={() => window.location.reload()} className="bg-gray-800 text-white px-8 py-3 rounded-lg font-black hover:bg-gray-700 transition w-full">إرسال استمارة أخرى</button>
                         </div>
                     </div>
@@ -289,7 +289,6 @@
                                         <div>
                                             <label className="label-title">مدة التكوين (5 سنوات / # سنتين)</label>
                                             <input type="text" name="trainingDuration" placeholder="5 أو #" value={formData.trainingDuration} onChange={handleChange} />
-                                            <p className="text-xs text-gray-500 font-bold mt-1">5 = خمس سنوات | # = سنتين فقط</p>
                                         </div>
                                         <div className="flex gap-2">
                                             <div className="flex-1"><label className="label-title">سنة البداية</label><input type="text" name="startYear" maxLength="4" value={formData.startYear} onChange={handleChange} /></div>
@@ -385,7 +384,7 @@
 
                                 <div className="form-section">
                                     <h2 className="section-header">9. البريد الإلكتروني للاتصال</h2>
-                                    <div><label className="label-title">بريدك الإلكتروني (لتلقي نسخة من الرد)</label><input type="email" name="email" required value={formData.email} onChange={handleChange} /></div>
+                                    <div><label className="label-title">بريدك الإلكتروني</label><input type="email" name="email" required value={formData.email} onChange={handleChange} /></div>
                                 </div>
 
                                 <div className="form-section">
@@ -395,7 +394,7 @@
                                             <label key={doc} className="flex items-center gap-2 p-2 bg-gray-50 rounded border cursor-pointer font-bold"><input type="checkbox" checked={formData.attachedDocs.includes(doc)} onChange={() => handleDocToggle(doc)} /> {doc}</label>
                                         ))}
                                     </div>
-                                    <h3 className="font-black mb-3 text-sm text-red-700">تحديد نوع الخبرة المهنية (هام جداً للتنقيط):</h3>
+                                    <h3 className="font-black mb-3 text-sm text-red-700">تحديد نوع الخبرة المهنية:</h3>
                                     <div className="space-y-2">
                                         {experienceOptions.map((exp, idx) => (
                                             <label key={idx} className={`flex items-start gap-2 p-2 rounded border cursor-pointer hover:bg-gray-100 transition ${formData.expType === exp ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-gray-50'}`}>
