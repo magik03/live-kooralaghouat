@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>نظام المسابقات الرسمي - الجزائر</title>
+    <title>الاستمارة الرسمية الكاملة - عرض واسع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,232 +17,146 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: #f8fafc; }
-        input, select { @apply w-full p-3 rounded-xl border-2 border-slate-200 focus:border-blue-600 outline-none transition-all font-bold bg-white text-slate-700; }
-        label { @apply block text-sm font-black text-slate-700 mb-2 mr-1; }
-        .section-card { @apply bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-100 mb-8 fade-in; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .sidebar-btn { @apply flex items-center justify-between w-full p-4 rounded-2xl font-bold transition-all mb-2; }
-        .tab-active { @apply bg-blue-600 text-white shadow-xl; }
-        .tab-inactive { @apply text-slate-500 hover:bg-white hover:text-blue-600; }
+        body { font-family: 'Tajawal', sans-serif; background: #eff6ff; margin: 0; }
+        input, select, textarea { 
+            @apply w-full p-4 rounded-xl border-2 border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold bg-white text-slate-700 text-lg; 
+        }
+        label { @apply block text-base font-black text-slate-800 mb-2 mr-1 mt-4; }
+        .form-container { @apply w-full max-w-[98%] mx-auto py-8; }
+        .section-card { @apply bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border border-white mb-10 fade-in; }
+        .grid-official { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2; }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .step-pill { @apply px-6 py-2 rounded-full font-black text-sm transition-all border-2; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyBdlRDPTQqY8lZvD4R7nneXAwPgRbxmm14",
-          authDomain: "councour-59e43.firebaseapp.com",
-          projectId: "councour-59e43",
-          storageBucket: "councour-59e43.firebasestorage.app",
-          messagingSenderId: "492907661374",
-          appId: "1:492907661374:web:31792fc3ab95d0e69ea96f"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        // بيانات الولايات والبلديات (مختصرة للعرض)
-        const algeriaData = {
-            "16- الجزائر": ["بلدية سيدي امحمد", "بلدية الدار البيضاء", "بلدية الشراقة"],
-            "17- الجلفة": ["بلدية الجلفة", "بلدية عين وسارة", "بلدية حاسي بحبح"],
-            "31- وهران": ["بلدية وهران", "بلدية بئر الجير", "بلدية السانيا"]
-        };
+        const { useState } = React;
 
         const App = () => {
-            const [view, setView] = useState('user'); 
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-            useEffect(() => {
-                auth.onAuthStateChanged(user => setIsLoggedIn(!!user));
-            }, []);
-
-            return (
-                <div className="min-h-screen flex flex-col">
-                    <nav className="h-20 bg-slate-900 text-white flex items-center justify-between px-6 sticky top-0 z-50 shadow-2xl">
-                        <div className="flex items-center gap-3">
-                            <i className="fa-solid fa-gavel text-blue-400 text-2xl"></i>
-                            <h1 className="font-black text-lg md:text-xl">بوابة المسابقات الرسمية</h1>
-                        </div>
-                        <button onClick={() => setView(view === 'user' ? 'admin' : 'user')} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-bold text-xs transition-all">
-                            {view === 'user' ? 'لوحة التحكم' : 'عرض الاستمارة'}
-                        </button>
-                    </nav>
-
-                    {view === 'user' ? <UserView /> : (isLoggedIn ? <AdminDashboard /> : <AdminLogin />)}
-                </div>
-            );
-        };
-
-        const UserView = () => {
             const [step, setStep] = useState(1);
             const [f, setF] = useState({});
-            const [loading, setLoading] = useState(false);
 
             const updateF = (key, val) => setF({...f, [key]: val});
 
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                try {
-                    await db.collection("candidates").add({
-                        ...f, 
-                        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    alert("✅ تم إرسال طلبكم بنجاح!");
-                    setF({}); setStep(1);
-                } catch (err) { alert("❌ خطأ في الإرسال"); }
-                setLoading(false);
-            };
-
             return (
-                <div className="max-w-4xl mx-auto mt-8 px-4 pb-20">
-                    <div className="flex justify-between mb-8 px-4 relative">
-                        {[1, 2, 3].map(s => (
-                            <div key={s} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold z-10 ${step >= s ? 'bg-blue-600 text-white' : 'bg-white text-slate-400 border-2'}`}>
-                                {s}
-                            </div>
-                        ))}
-                        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-0"></div>
-                    </div>
+                <div className="min-h-screen">
+                    <nav className="bg-blue-900 text-white p-6 shadow-xl text-center">
+                        <h1 className="text-2xl md:text-3xl font-black">استمارة المعلومات للمشاركة في المسابقة على أساس الشهادة</h1>
+                        <p className="text-blue-200 mt-2">نموذج رسمي مطابق لملف مديرية التربية</p>
+                    </nav>
 
-                    <form onSubmit={handleSubmit}>
-                        {step === 1 && (
-                            <div className="section-card">
-                                <h3 className="text-xl font-black mb-6 border-b pb-2 text-blue-600">1. المعلومات الشخصية (حسب الوثيقة)</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="md:col-span-2">
-                                        <label>رقم التعريف الوطني (NIN)</label>
-                                        <input required placeholder="18 رقم" maxLength="18" value={f.nin || ''} onChange={e=>updateF('nin', e.target.value)} />
-                                    </div>
-                                    <input placeholder="اللقب بالعربية" required onChange={e=>updateF('lastNameAr', e.target.value)} />
-                                    <input placeholder="الاسم بالعربية" required onChange={e=>updateF('firstNameAr', e.target.value)} />
-                                    <input placeholder="اللقب باللاتينية" required onChange={e=>updateF('lastNameEn', e.target.value)} />
-                                    <input placeholder="الاسم باللاتينية" required onChange={e=>updateF('firstNameEn', e.target.value)} />
-                                    <select required onChange={e=>updateF('state', e.target.value)}>
-                                        <option value="">اختر الولاية...</option>
-                                        {Object.keys(algeriaData).map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                    <select required disabled={!f.state} onChange={e=>updateF('city', e.target.value)}>
-                                        <option value="">اختر البلدية...</option>
-                                        {f.state && algeriaData[f.state].map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                                <div className="mt-8 flex justify-end"><button type="button" onClick={()=>setStep(2)} className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">التالي</button></div>
-                            </div>
-                        )}
-
-                        {step === 2 && (
-                            <div className="section-card">
-                                <h3 className="text-xl font-black mb-6 border-b pb-2 text-blue-600">2. المسار الدراسي والخدمة الوطنية</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <select required onChange={e=>updateF('service', e.target.value)}>
-                                        <option value="">وضعية الخدمة الوطنية...</option>
-                                        <option>مؤدى</option><option>معفى</option><option>مؤجل</option>
-                                    </select>
-                                    <input type="date" required onChange={e=>updateF('serviceDate', e.target.value)} />
-                                    <input placeholder="تسمية الشهادة" required className="md:col-span-2" onChange={e=>updateF('degree', e.target.value)} />
-                                    <input placeholder="التخصص" required onChange={e=>updateF('specialty', e.target.value)} />
-                                    <input placeholder="المؤسسة المسلمة" required onChange={e=>updateF('university', e.target.value)} />
-                                </div>
-                                <div className="mt-8 flex justify-between">
-                                    <button type="button" onClick={()=>setStep(1)} className="bg-slate-200 px-8 py-3 rounded-xl font-bold">السابق</button>
-                                    <button type="button" onClick={()=>setStep(3)} className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold">التالي</button>
-                                </div>
-                            </div>
-                        )}
-
-                        {step === 3 && (
-                            <div className="section-card text-center">
-                                <i className="fa-solid fa-clipboard-check text-6xl text-green-500 mb-4"></i>
-                                <h3 className="text-2xl font-black mb-4">تأكيد البيانات</h3>
-                                <p className="text-slate-500 mb-8 text-sm">أصرح بشرفي بصحة المعلومات المقدمة في هذه الاستمارة.</p>
-                                <div className="flex justify-between">
-                                    <button type="button" onClick={()=>setStep(2)} className="bg-slate-200 px-8 py-3 rounded-xl font-bold">السابق</button>
-                                    <button type="submit" disabled={loading} className="bg-green-600 text-white px-12 py-3 rounded-xl font-black text-lg">
-                                        {loading ? "جاري الإرسال..." : "إرسال الطلب"}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </form>
-                </div>
-            );
-        };
-
-        const AdminDashboard = () => {
-            const [candidates, setCandidates] = useState([]);
-            const [activeTab, setActiveTab] = useState('all');
-
-            useEffect(() => {
-                const unsub = db.collection("candidates").orderBy("submittedAt", "desc").onSnapshot(snap => {
-                    setCandidates(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                });
-                return unsub;
-            }, []);
-
-            return (
-                <div className="flex flex-1 flex-col md:flex-row">
-                    <aside className="w-full md:w-72 bg-white border-l p-6">
-                        <button onClick={()=>setActiveTab('all')} className={`sidebar-btn ${activeTab === 'all' ? 'tab-active' : 'tab-inactive'}`}>
-                            <span><i className="fa-solid fa-users ml-2"></i> المترشحين</span>
-                        </button>
-                        <button onClick={()=>auth.signOut()} className="sidebar-btn text-red-500 mt-10">خروج</button>
-                    </aside>
-
-                    <main className="flex-1 p-6 md:p-10">
-                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-right border-collapse">
-                                    <thead className="bg-slate-900 text-white">
-                                        <tr>
-                                            <th className="p-4 text-xs whitespace-nowrap">NIN</th>
-                                            <th className="p-4 text-xs">الاسم واللقب</th>
-                                            <th className="p-4 text-xs">الولاية/البلدية</th>
-                                            <th className="p-4 text-xs">الشهادة</th>
-                                            <th className="p-4 text-xs">الخدمة الوطنية</th>
-                                            <th className="p-4 text-xs">الإجراء</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {candidates.map(c => (
-                                            <tr key={c.id} className="border-b hover:bg-slate-50 transition-colors">
-                                                <td className="p-4 font-mono text-xs">{c.nin}</td>
-                                                <td className="p-4 font-bold text-sm">{c.firstNameAr} {c.lastNameAr}</td>
-                                                <td className="p-4 text-xs">{c.state} <br/> <span className="text-blue-500">{c.city}</span></td>
-                                                <td className="p-4 text-xs font-bold">{c.degree}</td>
-                                                <td className={`p-4 text-xs font-black ${c.service === 'مؤدى' ? 'text-green-600' : 'text-orange-600'}`}>{c.service}</td>
-                                                <td className="p-4">
-                                                    <button onClick={()=>db.collection("candidates").doc(c.id).delete()} className="text-red-400 hover:text-red-600">
-                                                        <i className="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div className="form-container">
+                        {/* نظام التنقل بين الأقسام */}
+                        <div className="flex flex-wrap justify-center gap-2 mb-10">
+                            <span className={`step-pill ${step===1 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-200'}`}>1. المعلومات الشخصية</span>
+                            <span className={`step-pill ${step===2 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-200'}`}>2. الحالة تجاه الخدمة الوطنية</span>
+                            <span className={`step-pill ${step===3 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-200'}`}>3. الشهادة والمؤهل</span>
+                            <span className={`step-pill ${step===4 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-400 border-slate-200'}`}>4. المسار الدراسي والخبرة</span>
                         </div>
-                    </main>
-                </div>
-            );
-        };
 
-        const AdminLogin = () => {
-            const [e, setE] = useState(''); const [p, setP] = useState('');
-            return (
-                <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-[2.5rem] shadow-2xl border w-11/12">
-                    <h2 className="text-2xl font-black text-center mb-8">تسجيل دخول الإدارة</h2>
-                    <form onSubmit={async(x)=>{x.preventDefault(); try{await auth.signInWithEmailAndPassword(e, p)}catch(err){alert("خطأ في الدخول")}} } className="space-y-4">
-                        <input type="email" placeholder="البريد الإلكتروني" onChange={v=>setE(v.target.value)} />
-                        <input type="password" placeholder="كلمة المرور" onChange={v=>setP(v.target.value)} />
-                        <button className="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-lg shadow-lg">دخول</button>
-                    </form>
+                        <form className="px-4">
+                            {/* القسم 1: المعلومات الشخصية الكاملة */}
+                            {step === 1 && (
+                                <div className="section-card">
+                                    <h2 className="text-2xl font-black text-blue-800 mb-8 border-r-8 border-blue-600 pr-4">أولاً: المعلومات الشخصية</h2>
+                                    <div className="grid-official">
+                                        <div className="lg:col-span-3 bg-blue-50 p-6 rounded-2xl mb-4">
+                                            <label>رقم التعريف الوطني (NIN) - يتكون من 18 رقم</label>
+                                            <input required placeholder="أدخل الـ 18 رقماً بدقة" maxLength="18" value={f.nin || ''} onChange={e=>updateF('nin', e.target.value)} />
+                                        </div>
+                                        <div><label>اللقب (بالعربية)</label><input required onChange={e=>updateF('lastNameAr', e.target.value)} /></div>
+                                        <div><label>الاسم (بالعربية)</label><input required onChange={e=>updateF('firstNameAr', e.target.value)} /></div>
+                                        <div><label>اللقب (باللاتينية)</label><input required onChange={e=>updateF('lastNameEn', e.target.value)} /></div>
+                                        <div><label>الاسم (باللاتينية)</label><input required onChange={e=>updateF('firstNameEn', e.target.value)} /></div>
+                                        <div><label>ابن (اسم الأب)</label><input required onChange={e=>updateF('fatherName', e.target.value)} /></div>
+                                        <div><label>و (اسم الأم)</label><input required onChange={e=>updateF('motherName', e.target.value)} /></div>
+                                        <div><label>لقب الأم</label><input required onChange={e=>updateF('motherLastName', e.target.value)} /></div>
+                                        <div><label>تاريخ الميلاد</label><input type="date" required onChange={e=>updateF('birthDate', e.target.value)} /></div>
+                                        <div><label>مكان الميلاد</label><input required onChange={e=>updateF('birthPlace', e.target.value)} /></div>
+                                        <div><label>الجنس</label>
+                                            <select onChange={e=>updateF('gender', e.target.value)}>
+                                                <option>ذكر</option><option>أنثى</option>
+                                            </select>
+                                        </div>
+                                        <div><label>الحالة العائلية</label><input placeholder="أعزب، متزوج..." onChange={e=>updateF('familyStatus', e.target.value)} /></div>
+                                        <div><label>عدد الأولاد</label><input type="number" defaultValue="0" onChange={e=>updateF('childrenCount', e.target.value)} /></div>
+                                        <div className="lg:col-span-2"><label>العنوان الشخصي الكامل</label><input required onChange={e=>updateF('address', e.target.value)} /></div>
+                                        <div><label>رقم الهاتف</label><input type="tel" required placeholder="06 / 07 / 05" onChange={e=>updateF('phone', e.target.value)} /></div>
+                                        <div><label>البريد الإلكتروني</label><input type="email" onChange={e=>updateF('email', e.target.value)} /></div>
+                                    </div>
+                                    <div className="mt-12 flex justify-end"><button type="button" onClick={()=>setStep(2)} className="bg-blue-700 text-white px-16 py-4 rounded-2xl font-black text-xl shadow-lg hover:bg-blue-800">التالي (الخدمة الوطنية) ←</button></div>
+                                </div>
+                            )}
+
+                            {/* القسم 2: الخدمة الوطنية */}
+                            {step === 2 && (
+                                <div className="section-card">
+                                    <h2 className="text-2xl font-black text-blue-800 mb-8 border-r-8 border-blue-600 pr-4">ثانياً: الوضعية تجاه الخدمة الوطنية</h2>
+                                    <div className="grid-official">
+                                        <div><label>الوضعية</label>
+                                            <select onChange={e=>updateF('milStatus', e.target.value)}>
+                                                <option>مؤدى</option><option>معفى</option><option>مؤجل</option>
+                                            </select>
+                                        </div>
+                                        <div><label>رقم مرجع الوثيقة</label><input required onChange={e=>updateF('milRef', e.target.value)} /></div>
+                                        <div><label>تاريخ إصدارها</label><input type="date" required onChange={e=>updateF('milIssueDate', e.target.value)} /></div>
+                                    </div>
+                                    <div className="mt-12 flex justify-between">
+                                        <button type="button" onClick={()=>setStep(1)} className="bg-slate-200 px-12 py-4 rounded-2xl font-bold text-xl">السابق</button>
+                                        <button type="button" onClick={()=>setStep(3)} className="bg-blue-700 text-white px-16 py-4 rounded-2xl font-black text-xl shadow-lg">التالي (الشهادة) ←</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* القسم 3: الشهادة والمؤهل العلمي (مفصل) */}
+                            {step === 3 && (
+                                <div className="section-card">
+                                    <h2 className="text-2xl font-black text-blue-800 mb-8 border-r-8 border-blue-600 pr-4">ثالثاً: الشهادة والمؤهل العلمي</h2>
+                                    <div className="grid-official">
+                                        <div className="lg:col-span-2"><label>تسمية الشهادة</label><input required placeholder="ليسانس، ماستر، مهندس..." onChange={e=>updateF('degreeTitle', e.target.value)} /></div>
+                                        <div><label>الشعبة / التخصص</label><input required onChange={e=>updateF('specialty', e.target.value)} /></div>
+                                        <div><label>رقم الشهادة</label><input required onChange={e=>updateF('degreeId', e.target.value)} /></div>
+                                        <div><label>تاريخ التخرج (المداولات)</label><input type="date" required onChange={e=>updateF('gradDate', e.target.value)} /></div>
+                                        <div><label>المؤسسة المسلمة للشهادة</label><input required onChange={e=>updateF('university', e.target.value)} /></div>
+                                        <div><label>مدة التكوين للحصول على الشهادة</label><input placeholder="مثلاً: 3 سنوات" onChange={e=>updateF('studyDuration', e.target.value)} /></div>
+                                    </div>
+                                    <div className="mt-12 flex justify-between">
+                                        <button type="button" onClick={()=>setStep(2)} className="bg-slate-200 px-12 py-4 rounded-2xl font-bold text-xl">السابق</button>
+                                        <button type="button" onClick={()=>setStep(4)} className="bg-blue-700 text-white px-16 py-4 rounded-2xl font-black text-xl shadow-lg">التالي (المسار والخبرة) ←</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* القسم 4: المسار الدراسي والخبرة */}
+                            {step === 4 && (
+                                <div className="section-card">
+                                    <h2 className="text-2xl font-black text-blue-800 mb-8 border-r-8 border-blue-600 pr-4">رابعاً: المسار الدراسي والخبرة</h2>
+                                    <div className="grid-official">
+                                        <div><label>معدل المسار الدراسي (المعدل العام)</label><input type="number" step="0.01" required onChange={e=>updateF('finalAvg', e.target.value)} /></div>
+                                        <div><label>معدل سنة التخرج</label><input type="number" step="0.01" onChange={e=>updateF('gradYearAvg', e.target.value)} /></div>
+                                        <div><label>هل أنت خريج المدارس العليا؟</label>
+                                            <select onChange={e=>updateF('isEsn', e.target.value)}><option>لا</option><option>نعم</option></select>
+                                        </div>
+                                        <div className="lg:col-span-3 mt-6 p-6 bg-slate-50 rounded-3xl">
+                                            <h4 className="font-black mb-4">الخبرة المهنية (إجمالي عدد الأشهر)</h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div><label>في قطاع التربية</label><input type="number" placeholder="أشهر" onChange={e=>updateF('expEdu', e.target.value)} /></div>
+                                                <div><label>خارج قطاع التربية</label><input type="number" placeholder="أشهر" onChange={e=>updateF('expOther', e.target.value)} /></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-12 flex justify-between">
+                                        <button type="button" onClick={()=>setStep(3)} className="bg-slate-200 px-12 py-4 rounded-2xl font-bold text-xl">السابق</button>
+                                        <button type="submit" className="bg-green-600 text-white px-20 py-5 rounded-2xl font-black text-2xl shadow-2xl hover:bg-green-700 transition-transform active:scale-95">تأكيد وإرسال الملف النهائي ✅</button>
+                                    </div>
+                                </div>
+                            )}
+                        </form>
+                    </div>
                 </div>
             );
         };
