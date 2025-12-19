@@ -69,6 +69,19 @@
         50% { border-color: #059669; }
         100% { border-color: #008568; }
       }
+
+      .loading-pulse {
+        animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse-fast {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+
+      .modal-bg {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(8px);
+      }
     </style>
   <link rel="stylesheet" href="/index.css">
 </head>
@@ -76,7 +89,7 @@
     <div id="root"></div>
 
     <script type="text/babel" data-presets="typescript,react">
-      const { useState, useMemo } = React;
+      const { useState, useMemo, useEffect } = React;
 
       const WILAYAS = [
         "01 أدرار", "02 الشلف", "03 الأغواط", "04 أم البواقي", "05 باتنة", "06 بجاية", "07 بسكرة", "08 بشار", 
@@ -108,6 +121,7 @@
       const BookOpen = (p) => <Icon {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a4 4 0 0 0-4-4H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a4 4 0 0 1 4-4h6z"/></Icon>;
       const Mail = (p) => <Icon {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></Icon>;
       const Home = (p) => <Icon {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>;
+      const CheckCircle = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;
 
       const InputField = ({ label, name, value, onChange, type="text", required=false, options=null, maxLength=null, placeholder="", step="any" }) => (
         <div className="flex flex-col mb-4">
@@ -166,6 +180,9 @@
         };
 
         const [formData, setFormData] = useState(initialForm);
+        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [showSuccessModal, setShowSuccessModal] = useState(false);
+        const [requiredDocs, setRequiredDocs] = useState([]);
 
         const academicYearsCount = useMemo(() => {
           const s = parseInt(formData.startYear);
@@ -195,16 +212,44 @@
           }));
         };
 
+        const calculateRequiredDocs = () => {
+          const docs = ["طلب خطي للمشاركة في المسابقة.", "نسخة من بطاقة التعريف الوطنية."];
+          
+          if (formData.residenceCommune) docs.push("بطاقة إقامة سارية المفعول.");
+          if (formData.degree) docs.push(`نسخة من الشهادة المطلوبة (${formData.degree}) في التخصص المعني.`);
+          if (formData.gender === 'ذكر' && formData.nationalServiceStatus) docs.push("شهادة تثبت وضعية المترشح تجاه الخدمة الوطنية.");
+          if (Object.keys(formData.academicYears).length > 0 || formData.overallGpa) docs.push("كشوف نقاط المسار الدراسي (لكافة السنوات الجامعية).");
+          if (formData.isTopOfClass === 'نعم') docs.push("شهادة تثبت أن المترشح هو الأول في دفعته.");
+          if (formData.hasProfessionalExp === 'نعم') docs.push("شهادات العمل التي تثبت الخبرة المهنية المكتسبة.");
+          if (formData.hasJob === 'نعم') docs.push("ترخيص من الإدارة المستخدمة بالمشاركة في المسابقة وتعهد بالاستقالة.");
+          if (formData.hasOtherDegrees === 'نعم') docs.push("نسخة من شهادة الدراسات العليا الإضافية.");
+          if (formData.hasPublications === 'نعم') docs.push("نسخ من المقالات المنشورة أو الأعمال العلمية والبحثية المنجزة.");
+          
+          return docs;
+        };
+
         const handleSubmit = (e) => {
           e.preventDefault();
-          const saved = localStorage.getItem('dz_recruitment_v18_shared');
-          const submissions = saved ? JSON.parse(saved) : [];
-          const newEntry = { ...formData, id: Date.now().toString(), submissionDate: new Date().toLocaleString('ar-DZ') };
-          localStorage.setItem('dz_recruitment_v18_shared', JSON.stringify([newEntry, ...submissions]));
+          setIsSubmitting(true);
           
-          alert(`شكرا لكم على التسجيل ${formData.firstNameAr} ${formData.lastNameAr} لقد تم ارسال النموذج الى بريد د.عبد المجيد يرجى اتصال به ودفع الملف الورقي لاكمال التسجيل في المنصة`);
-          
+          // Simulation of submission processing
+          setTimeout(() => {
+            const saved = localStorage.getItem('dz_recruitment_v18_shared');
+            const submissions = saved ? JSON.parse(saved) : [];
+            const newEntry = { ...formData, id: Date.now().toString(), submissionDate: new Date().toLocaleString('ar-DZ') };
+            localStorage.setItem('dz_recruitment_v18_shared', JSON.stringify([newEntry, ...submissions]));
+            
+            const docsList = calculateRequiredDocs();
+            setRequiredDocs(docsList);
+            setIsSubmitting(false);
+            setShowSuccessModal(true);
+          }, 1500);
+        };
+
+        const closeSuccess = () => {
+          setShowSuccessModal(false);
           setFormData(initialForm);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         const showChildrenField = formData.maritalStatus === 'متزوج(ة)' || formData.maritalStatus === 'مطلق(ة)' || formData.maritalStatus === 'أرمل(ة)';
@@ -222,14 +267,14 @@
               <form onSubmit={handleSubmit} className="animate-in fade-in duration-700">
                 
                 {/* 1. Appointment Info */}
-                <FormCard title="معلومات التعيين" icon={<Briefcase />}>
+                <FormCard title="1. معلومات التعيين" icon={<Briefcase />}>
                   <InputField label="مديرية التربية لولاية" name="wilaya" required value={formData.wilaya} onChange={handleChange} options={WILAYAS} />
                   <InputField label="الرتبة المراد الالتحاق بها" name="rank" required value={formData.rank} onChange={handleChange} options={['أستاذ ابتدائي', 'أستاذ متوسط', 'أستاذ ثانوي', 'مشرف تربية']} />
                   <InputField label="مادة التدريس" name="teachingSubject" required value={formData.teachingSubject} onChange={handleChange} placeholder="اللغة العربية، الرياضيات..." />
                 </FormCard>
 
                 {/* 2. Identity Info */}
-                <FormCard title="الهوية والمعلومات المدنية" icon={<User />}>
+                <FormCard title="2. الهوية والمعلومات المدنية" icon={<User />}>
                   <InputField label="رقم التعريف الوطني (NIN)" name="nin" required value={formData.nin} onChange={handleChange} maxLength={18} />
                   <InputField label="اللقب (بالعربية)" name="lastNameAr" required value={formData.lastNameAr} onChange={handleChange} />
                   <InputField label="الاسم (بالعربية)" name="firstNameAr" required value={formData.firstNameAr} onChange={handleChange} />
@@ -249,7 +294,7 @@
                 </FormCard>
 
                 {/* 3. Residence Info & National Service */}
-                <FormCard title="مكان الإقامة والاتصال" icon={<Home />}>
+                <FormCard title="3. مكان الإقامة والخدمة الوطنية" icon={<Home />}>
                   <InputField label="ولاية الإقامة" name="residenceWilaya" required value={formData.residenceWilaya} onChange={handleChange} options={WILAYAS} />
                   <InputField label="بلدية الإقامة" name="residenceCommune" required value={formData.residenceCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
                   <InputField label="رقم الهاتف الشخصي" name="phone" required value={formData.phone} onChange={handleChange} maxLength={10} />
@@ -276,7 +321,7 @@
                 </FormCard>
 
                 {/* 4. Education Info */}
-                <FormCard title="الشهادات والمؤهلات العلمية" icon={<GraduationCap />}>
+                <FormCard title="4. الشهادات والمؤهلات العلمية" icon={<GraduationCap />}>
                   <InputField label="الشهادة المتحصل عليها" name="degree" required value={formData.degree} onChange={handleChange} options={['ليسانس', 'ماستر', 'دكتوراه', 'مهندس دولة']} />
                   <InputField label="التخصص الدقيق" name="degreeSpecialty" required value={formData.degreeSpecialty} onChange={handleChange} />
                   <InputField label="رقم الشهادة" name="degreeCertNum" required value={formData.degreeCertNum} onChange={handleChange} placeholder="اكتب رقم الشهادة" />
@@ -297,7 +342,6 @@
                     )}
                   </div>
 
-                  {/* New fields added below "First in Class" question */}
                   <InputField label="المعدل العام للمسار الدراسي" name="overallGpa" type="number" step="0.01" required value={formData.overallGpa} onChange={handleChange} placeholder="00.00" />
                   <InputField label="علامة المذكرة (إن وجدت)" name="thesisGrade" type="number" step="0.01" value={formData.thesisGrade} onChange={handleChange} placeholder="00.00" />
 
@@ -332,12 +376,12 @@
                 </FormCard>
 
                 {/* 5. Publications Section */}
-                <FormCard title="المنشورات والأعمال المهنية" icon={<BookOpen />}>
+                <FormCard title="5. المنشورات والأعمال المهنية" icon={<BookOpen />}>
                   <div className="md:col-span-3">
-                    <InputField label="هل لديك منشورات أو أعمال مهنية (مقالات في مجلات علمية، ملتقيات وطنية أو دولية)؟" name="hasPublications" required value={formData.hasPublications} onChange={handleChange} options={['نعم', 'لا']} />
+                    <InputField label="هل لديك منشورات أو أعمال مهنية؟" name="hasPublications" required value={formData.hasPublications} onChange={handleChange} options={['نعم', 'لا']} />
                     {formData.hasPublications === 'نعم' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-dz-green/5 rounded-[2.5rem] border-2 border-dz-green/10 mt-4">
-                        <InputField label="طبيعة العمل" name="pubNature" value={formData.pubNature} onChange={handleChange} placeholder="مقال في مجلة، كتاب، ملتقى..." />
+                        <InputField label="طبيعة العمل" name="pubNature" value={formData.pubNature} onChange={handleChange} placeholder="مقال، كتاب، ملتقى..." />
                         <InputField label="تاريخ النشر/المشاركة" name="pubDate" type="date" value={formData.pubDate} onChange={handleChange} />
                         <InputField label="اسم المجلة أو الملتقى" name="pubJournal" value={formData.pubJournal} onChange={handleChange} />
                         <InputField label="العدد / المجلد" name="pubIssue" value={formData.pubIssue} onChange={handleChange} />
@@ -348,7 +392,7 @@
                 </FormCard>
 
                 {/* 6. Previous Experience Section */}
-                <FormCard title="الخبرة المهنية المكتسبة" icon={<Briefcase />}>
+                <FormCard title="6. الخبرة المهنية المكتسبة" icon={<Briefcase />}>
                   <div className="md:col-span-3">
                     <InputField label="هل لديك خبرة مهنية سابقة؟" name="hasProfessionalExp" required value={formData.hasProfessionalExp} onChange={handleChange} options={['نعم', 'لا']} />
                     {formData.hasProfessionalExp === 'نعم' && (
@@ -366,7 +410,7 @@
                 </FormCard>
 
                 {/* 7. Current Job Status */}
-                <FormCard title="الوضعية المهنية الحالية" icon={<Briefcase />}>
+                <FormCard title="7. الوضعية المهنية الحالية" icon={<Briefcase />}>
                   <div className="md:col-span-3">
                     <InputField label="هل تشغل وظيفة حالياً في القطاع العام أو الخاص؟" name="hasJob" required value={formData.hasJob} onChange={handleChange} options={['نعم', 'لا']} />
                     {formData.hasJob === 'نعم' && (
@@ -388,19 +432,61 @@
                 </FormCard>
 
                 {/* 8. Final Contact */}
-                <FormCard title="بيانات الاتصال النهائية" icon={<Mail />} className="email-final-section">
+                <FormCard title="8. بيانات الاتصال النهائية" icon={<Mail />} className="email-final-section">
                   <div className="md:col-span-3">
                     <InputField label="البريد الإلكتروني الشخصي للمترشح (إلزامي)" name="email" type="email" required value={formData.email} onChange={handleChange} placeholder="example@mail.com" />
                   </div>
                 </FormCard>
 
                 <div className="flex justify-center mt-10">
-                  <button type="submit" className="bg-dz-green hover:bg-dz-green-dark text-white text-4xl font-black py-8 px-32 rounded-[3rem] shadow-2xl transition-all hover:scale-[1.03] flex items-center gap-5">
-                    إرسال
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className={`bg-dz-green hover:bg-dz-green-dark text-white text-4xl font-black py-8 px-32 rounded-[3rem] shadow-2xl transition-all hover:scale-[1.03] flex items-center gap-5 ${isSubmitting ? 'loading-pulse cursor-not-allowed opacity-80' : ''}`}
+                  >
+                    {isSubmitting ? 'جاري الإرسال...' : 'إرسال'}
                   </button>
                 </div>
               </form>
             </main>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-bg animate-in fade-in duration-300">
+                <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-dz-green p-8 md:p-12 relative animate-in zoom-in-95 duration-300">
+                  <div className="flex flex-col items-center text-center mb-8">
+                    <div className="bg-green-100 p-6 rounded-full text-dz-green mb-6">
+                      <CheckCircle size={80} />
+                    </div>
+                    <h2 className="text-3xl font-black text-slate-900 mb-4">تم تسجيلكم بنجاح!</h2>
+                    <p className="text-xl font-bold text-slate-600">
+                      أهلاً بك <span className="text-dz-green">{formData.firstNameAr} {formData.lastNameAr}</span>.
+                      لقد تم إرسال نموذجك الرقمي بنجاح إلى الإدارة.
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-[2rem] p-6 mb-8 border-2 border-slate-100">
+                    <h3 className="text-xl font-black text-dz-green mb-4 border-b-2 border-dz-green/10 pb-2">الملف الورقي المطلوب إيداعه:</h3>
+                    <p className="text-sm font-bold text-red-600 mb-4">يرجى الاتصال بـ د.عبد المجيد وتقديم الوثائق التالية لإتمام عملية التسجيل:</p>
+                    <ul className="space-y-3">
+                      {requiredDocs.map((doc, i) => (
+                        <li key={i} className="flex gap-3 items-start text-right">
+                          <span className="bg-dz-green text-white rounded-full p-1 mt-1 flex-shrink-0"><CheckCircle size={14}/></span>
+                          <span className="font-bold text-slate-700">{doc}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button 
+                    onClick={closeSuccess}
+                    className="w-full bg-dz-green hover:bg-dz-green-dark text-white text-2xl font-black py-6 rounded-[2rem] shadow-xl transition-all"
+                  >
+                    فهمت، إغلاق
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         );
       }
