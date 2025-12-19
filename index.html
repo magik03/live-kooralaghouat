@@ -164,7 +164,7 @@
           nin: '', lastNameAr: '', firstNameAr: '', lastNameLat: '', firstNameLat: '',
           fatherName: '', motherLastName: '', motherFirstName: '', childrenCount: '0',
           birthDate: '', birthWilaya: '', birthCommune: '',
-          residenceWilaya: '', residenceCommune: '',
+          residenceWilaya: '', residenceCommune: '', personalAddress: '',
           gender: 'ذكر', maritalStatus: 'أعزب(ة)', phone: '', email: '',
           nationalServiceStatus: '', nsRefNum: '', nsIssueDate: '', nsExpiryDate: '', nsStartDate: '', nsEndDate: '',
           degree: '', degreeSpecialty: '', gradDate: '', issuingInstitution: '',
@@ -191,27 +191,55 @@
         }, [formData.startYear, formData.endYear]);
 
         const handleChange = (e) => {
-          const { name, value } = e.target;
-          if (['nin', 'phone', 'adminPhone', 'childrenCount'].includes(name)) {
-            const onlyNums = value.replace(/[^0-9]/g, '');
-            if (name === 'nin' && onlyNums.length > 18) return;
-            if ((name === 'phone' || name === 'adminPhone') && onlyNums.length > 10) return;
-            setFormData({ ...formData, [name]: onlyNums });
-            return;
-          }
-          setFormData({ ...formData, [name]: value });
-        };
+  const { name, value } = e.target;
 
-        const handleAcademicYearChange = (yearIndex, field, value) => {
-          setFormData(prev => ({
-            ...prev,
-            academicYears: {
-              ...prev.academicYears,
-              [`Year${yearIndex}`]: { ...(prev.academicYears[`Year${yearIndex}`] || {}), [field]: value }
-            }
-          }));
-        };
+  // --- 1. حماية حقول الإيميل (المترشح + الإدارة) ---
+  // يمنع العربية تماماً ويقبل فقط حروف لاتينية، أرقام، والرموز المعيارية للإيميل
+  if (name === 'email' || name === 'adminEmail') {
+    const safeEmail = value.replace(/[^\w@.\-]/g, ''); 
+    setFormData(prev => ({ ...prev, [name]: safeEmail }));
+    return;
+  }
 
+  // --- 2. حماية حقول الأرقام (الهاتف + NIN) ---
+  if (['phone', 'adminPhone', 'nin', 'childrenCount'].includes(name)) {
+    const onlyNums = value.replace(/[^0-9]/g, '');
+    
+    // شروط الهاتف (05, 06, 07)
+    if (name === 'phone' || name === 'adminPhone') {
+      if (onlyNums.length > 10) return;
+      if (onlyNums.length === 1 && onlyNums !== "0") return;
+      if (onlyNums.length === 2 && !/^[567]$/.test(onlyNums[1])) return;
+    }
+    
+    // شروط NIN (10, 11, 12)
+    if (name === 'nin') {
+      if (onlyNums.length > 18) return;
+      if (onlyNums.length === 1 && onlyNums !== "1") return;
+      if (onlyNums.length === 2 && !/^[012]$/.test(onlyNums[1])) return;
+    }
+
+    setFormData(prev => ({ ...prev, [name]: onlyNums }));
+    return;
+  }
+
+  // --- 3. حماية الحقول العربية (الأسماء والعناوين) ---
+  if (['lastNameAr', 'firstNameAr', 'fatherName', 'motherLastName', 'motherFirstName', 'birthCommune', 'residenceCommune', 'eachingSubject' , 'birthCommune' , 'personalAddress', 'teachingSubject', 'residenceCommune','degreeSpecialty','issuingInstitution','otherDegreeName','otherDegreeSpecialty','otherDegreeIssuer','pubNature','pubJournal','pubIssue'].includes(name)) {
+    const onlyAr = value.replace(/[^\u0600-\u06FF\s]/g, '');
+    setFormData(prev => ({ ...prev, [name]: onlyAr }));
+    return;
+  }
+
+  // --- 4. حماية الحقول الفرنسية (الأسماء اللاتينية) ---
+  if (['lastNameLat', 'firstNameLat', 'birthCommune'].includes(name)) {
+    const onlyLat = value.replace(/[^a-zA-Z\s]/g, '');
+    setFormData(prev => ({ ...prev, [name]: onlyLat }));
+    return;
+  }
+
+  // بقية الحقول العادية
+  setFormData(prev => ({ ...prev, [name]: value }));
+};
         const calculateRequiredDocs = () => {
           const docs = [];
           
@@ -274,8 +302,8 @@
                 </FormCard>
 
                 {/* 2. Identity Info */}
-                <FormCard title="2. الهوية والمعلومات المدنية" icon={<User />}>
-                  <InputField label="رقم التعريف الوطني (NIN)" name="nin" required value={formData.nin} onChange={handleChange} maxLength={18} />
+                <FormCard title="2. المعلومات الشخصية" icon={<User />}>
+                  <InputField label="رقم التعريف الوطني (NIN)" name="nin" required value={formData.nin} onChange={handleChange} maxLength={18} onChange={handleChange} placeholder="رقم بطاقة التعريف الوطني الطويل " />
                   <InputField label="اللقب (بالعربية)" name="lastNameAr" required value={formData.lastNameAr} onChange={handleChange} />
                   <InputField label="الاسم (بالعربية)" name="firstNameAr" required value={formData.firstNameAr} onChange={handleChange} />
                   <InputField label="اللقب باللغة الفرنسية" name="lastNameLat" required value={formData.lastNameLat} onChange={handleChange} />
@@ -298,6 +326,9 @@
                   <InputField label="ولاية الإقامة" name="residenceWilaya" required value={formData.residenceWilaya} onChange={handleChange} options={WILAYAS} />
                   <InputField label="بلدية الإقامة" name="residenceCommune" required value={formData.residenceCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
                   <InputField label="رقم الهاتف الشخصي" name="phone" required value={formData.phone} onChange={handleChange} maxLength={10} />
+                  <div className="md:col-span-2 lg:col-span-3">
+                    <InputField label="العنوان الشخصي" name="personalAddress" required value={formData.personalAddress} onChange={handleChange} placeholder="اكتب عنوانك الشخصي بالتفصيل" />
+                  </div>
                   
                   {/* National Service Section */}
                   {formData.gender === 'ذكر' && (
@@ -323,15 +354,13 @@
                 {/* 4. Education Info */}
                 <FormCard title="4. الشهادات والمؤهلات العلمية" icon={<GraduationCap />}>
                   <InputField label="الشهادة المتحصل عليها" name="degree" required value={formData.degree} onChange={handleChange} options={['ليسانس', 'ماستر', 'دكتوراه', 'مهندس دولة']} />
-                  <InputField label="التخصص الدقيق" name="degreeSpecialty" required value={formData.degreeSpecialty} onChange={handleChange} />
+                  <InputField label="الشعبة / التخصص" name="degreeSpecialty" required value={formData.degreeSpecialty} onChange={handleChange} />
                   <InputField label="رقم الشهادة" name="degreeCertNum" required value={formData.degreeCertNum} onChange={handleChange} placeholder="اكتب رقم الشهادة" />
-                  <InputField label="تاريخ التخرج" name="gradDate" type="date" required value={formData.gradDate} onChange={handleChange} />
+                  <InputField label="تاريخ  التخرج (المداولات)" name="gradDate" type="date" required value={formData.gradDate} onChange={handleChange} />
+				  <InputField label="المؤسسة المسلمة للشهادة" name="issuingInstitution" required value={formData.issuingInstitution} onChange={handleChange} />
                   <InputField label="تقدير الشهادة" name="degreeAppreciation" required value={formData.degreeAppreciation} onChange={handleChange} options={['مقبول', 'قريب من الحسن', 'حسن', 'حسن جدا', 'مشرف', 'مشرف جدا']} />
-                  <InputField label="المؤسسة المسلمة للشهادة" name="issuingInstitution" required value={formData.issuingInstitution} onChange={handleChange} />
-                  
                   <InputField label="هل أنت خريج مدرسة وطنية عليا؟" name="isHigherSchoolGraduate" required value={formData.isHigherSchoolGraduate} onChange={handleChange} options={['نعم', 'لا']} />
-                  
-                  <div className="md:col-span-2 lg:col-span-3">
+                <div className="md:col-span-2 lg:col-span-3">
                     <InputField label="هل أنت الأول في الدفعة؟" name="isTopOfClass" required value={formData.isTopOfClass} onChange={handleChange} options={['نعم', 'لا']} />
                     {formData.isTopOfClass === 'نعم' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl mt-2 mb-4 animate-in slide-in-from-top-4 duration-300">
@@ -370,7 +399,14 @@
                         <InputField label="اسم الشهادة" name="otherDegreeName" value={formData.otherDegreeName} onChange={handleChange} />
                         <InputField label="التخصص" name="otherDegreeSpecialty" value={formData.otherDegreeSpecialty} onChange={handleChange} />
                         <InputField label="الجهة المسلمة" name="otherDegreeIssuer" value={formData.otherDegreeIssuer} onChange={handleChange} />
-                      </div>
+                        <InputField label="عدد السداسيات" name="nmsemester" value={formData.nmsemester} onChange={handleChange} />
+                        <InputField label="من السنة" name="startYear" type="number" value={formData.startYear} onChange={handleChange} placeholder="مثال: 2018" />
+                          <InputField label="إلى السنة" name="endYear" type="number" value={formData.endYear} onChange={handleChange} placeholder="مثال: 2021" />
+                    
+					  
+					  
+					  
+					  </div>
                     )}
                   </div>
                 </FormCard>
@@ -423,6 +459,20 @@
                         <InputField label="تسمية الإدارة/المؤسسة" name="adminName" required value={formData.adminName} onChange={handleChange} />
                         <InputField label="هاتف الإدارة" name="adminPhone" required value={formData.adminPhone} onChange={handleChange} />
                         <InputField label="البريد الإلكتروني للإدارة" name="adminEmail" type="email" required value={formData.adminEmail} onChange={handleChange} />
+						{formData.email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+    <p className="text-red-500 text-[10px] font-bold -mt-3 mb-2 bg-red-50 p-1 rounded border border-red-100">
+      ⚠️ يجب كتابة الإيميل بالحروف اللاتينية وصيغة صحيحة
+    </p>
+  )}
+						
+						
+						
+						
+						
+						
+						
+						
+						
                         <div className="md:col-span-2 lg:col-span-3">
                            <InputField label="عنوان الإدارة" name="adminAddress" required value={formData.adminAddress} onChange={handleChange} />
                         </div>
@@ -433,10 +483,25 @@
 
                 {/* 8. Final Contact */}
                 <FormCard title="8. بيانات الاتصال النهائية" icon={<Mail />} className="email-final-section">
-                  <div className="md:col-span-3">
-                    <InputField label="البريد الإلكتروني الشخصي للمترشح (إلزامي)" name="email" type="email" required value={formData.email} onChange={handleChange} placeholder="example@mail.com" />
-                  </div>
-                </FormCard>
+  <div className="md:col-span-3">
+    <div className="flex flex-col">
+      <InputField 
+        label="البريد الإلكتروني الشخصي للمترشح (إلزامي)" 
+        name="email" 
+        type="email" 
+        required 
+        value={formData.email} 
+        onChange={handleChange} 
+        placeholder="example@mail.com" 
+      />
+      {formData.email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+        <p className="text-red-500 text-[10px] font-bold -mt-3 mb-2 bg-red-50 p-1 rounded border border-red-100">
+          ⚠️ يرجى إدخال بريد إلكتروني صحيح (يجب أن يحتوي على @ ونقطة)
+        </p>
+      )}
+    </div>
+  </div>
+</FormCard>
 
                 <div className="flex justify-center mt-10">
                   <button 
