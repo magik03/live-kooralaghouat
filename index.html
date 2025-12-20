@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
   <head>
@@ -16,10 +17,11 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
-      // 2. إعدادات Firebase الخاصة بك
+      // إعدادات Firebase مع الرابط الذي أرسلته
       const firebaseConfig = {
         apiKey: "AIzaSyBdlRDPTQqY8lZvD4R7nneXAwPgRbxmm14",
         authDomain: "councour-59e43.firebaseapp.com",
+        databaseURL: "https://councour-59e43-default-rtdb.firebaseio.com/", 
         projectId: "councour-59e43",
         storageBucket: "councour-59e43.firebasestorage.app",
         messagingSenderId: "492907661374",
@@ -46,153 +48,103 @@
       ::-webkit-scrollbar { width: 10px; }
       ::-webkit-scrollbar-track { background: #f8fafc; }
       ::-webkit-scrollbar-thumb { background: #008568; border-radius: 5px; }
-      input, select, textarea { background-color: #ffffff !important; color: #000000 !important; font-weight: 700 !important; border: 2px solid #cbd5e1 !important; }
+      input, select { background-color: #ffffff !important; font-weight: 700 !important; border: 2px solid #cbd5e1 !important; }
       input:focus, select:focus { border-color: #008568 !important; box-shadow: 0 0 0 4px rgba(0, 133, 104, 0.1); }
-      label { color: #1e293b !important; font-weight: 800 !important; margin-bottom: 0.5rem; }
-      .year-strip { background: #ffffff; border: 2px solid #f1f5f9; border-right: 6px solid #008568; padding: 1.5rem; border-radius: 1.5rem; margin-bottom: 1rem; }
-      .email-final-section { background: linear-gradient(to left, #ffffff, #f0fdf4); border: 4px solid #008568; }
-      .loading-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .loading-pulse { animation: pulse 1.5s infinite; }
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
       .modal-bg { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); }
     </style>
   </head>
-  <body class="bg-slate-100 font-sans text-right text-slate-900 leading-relaxed">
+  <body class="bg-slate-100 font-sans text-right text-slate-900">
     <div id="root"></div>
 
     <script type="text/babel">
-      const { useState, useMemo } = React;
+      const { useState } = React;
 
-      // الثوابت المذكورة في كودك
-      const WILAYAS = ["01 أدرار", "02 الشلف", "03 الأغواط", "04 أم البواقي", "05 باتنة", "06 بجاية", "07 بسكرة", "08 بشار", "09 البليدة", "10 البويرة", "11 تمنراست", "12 تبسة", "13 تلمسان", "14 تيارت", "15 تيزي وزو", "16 الجزائر", "17 الجلفة", "18 جيجل", "19 سطيف", "20 سعيدة", "21 سكيكدة", "22 سيدي بلعباس", "23 عنابة", "24 قالمة", "25 قسنطينة", "26 المدية", "27 مستغانم", "28 المسيلة", "29 معسكر", "30 ورقلة", "31 وهران", "32 البيض", "33 إليزي", "34 برج بوعريريج", "35 بومرداس", "36 الطارف", "37 تندوف", "38 تيسمسيلت", "39 الوادي", "40 خنشلة", "41 سوق أهراس", "42 تيبازة", "43 ميلة", "44 عين الدفلى", "45 النعامة", "46 عين تموشنت", "47 غرداية", "48 غليزان", "49 تميمون", "50 برج باجي مختار", "51 أولاد جلال", "52 بني عباس", "53 عين صالح", "54 عين قزام", "55 تقرت", "56 جانت", "57 المغير", "58 المنيعة"];
-      const EXP_TYPES = ["1. خبرة مهنية مكتسبة في المؤسسات والإدارات العمومية التابعة لقطاع التربية الوطنية", "2. خبرة مهنية مكتسبة في مؤسسة أو إدارة عمومية أخرى", "3. خبرة مهنية مكتسبة في قطاع التربية في منصب مختلف", "4. خبرة مهنية مكتسبة في إدارات أخرى في منصب مختلف", "5. خبرة مهنية مكتسبة في المؤسسات الخاصة"];
-
-      const Icon = ({ children, size = 20, className = "" }) => (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
-      );
-      const Briefcase = (p) => <Icon {...p}><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2-2v16" /></Icon>;
-      const User = (p) => <Icon {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></Icon>;
-      const GraduationCap = (p) => <Icon {...p}><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></Icon>;
-      const BookOpen = (p) => <Icon {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a4 4 0 0 0-4-4H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a4 4 0 0 1 4-4h6z"/></Icon>;
-      const Mail = (p) => <Icon {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></Icon>;
-      const Home = (p) => <Icon {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>;
-      const CheckCircle = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;
-
-      const InputField = ({ label, name, value, onChange, type="text", required=false, options=null, maxLength=null, placeholder="", step="any" }) => (
+      const WILAYAS = ["01 أدرار", "02 الشلف", "03 الأغواط", "04 أم البواقي", "05 باتنة", "16 الجزائر", "31 وهران"]; // قائمة مختصرة للتجربة
+      
+      const InputField = ({ label, name, value, onChange, type="text", required=false, options=null, maxLength=null, placeholder="" }) => (
         <div className="flex flex-col mb-4">
-          <label className="text-sm font-black text-slate-700">{label} {required && <span className="text-red-600">*</span>}</label>
+          <label className="text-sm font-black mb-2">{label} {required && <span className="text-red-600">*</span>}</label>
           {options ? (
             <select name={name} value={value} onChange={onChange} required={required} className="p-4 rounded-xl border-2">
               <option value="">-- اختر --</option>
               {options.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           ) : (
-            <input type={type} name={name} value={value} onChange={onChange} required={required} maxLength={maxLength} placeholder={placeholder} step={step} className="p-4 rounded-xl border-2" />
+            <input type={type} name={name} value={value} onChange={onChange} required={required} maxLength={maxLength} placeholder={placeholder} className="p-4 rounded-xl border-2" />
           )}
         </div>
       );
 
-      const FormCard = ({ title, icon, children, className="" }) => (
-        <div className={`bg-white rounded-[2rem] border-2 p-8 mb-10 shadow-sm ${className}`}>
-          <div className="flex items-center gap-4 mb-8 border-b-2 pb-5">
-            <div className="bg-dz-green p-3 rounded-2xl text-white shadow-lg">{icon}</div>
-            <h2 className="text-2xl font-black text-slate-800">{title}</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{children}</div>
-        </div>
-      );
-
       const App = () => {
-        const initialForm = {
-          wilaya: '', rank: '', teachingSubject: '', nin: '', lastNameAr: '', firstNameAr: '', lastNameLat: '', firstNameLat: '',
-          fatherName: '', motherLastName: '', motherFirstName: '', childrenCount: '0', birthDate: '', birthWilaya: '', birthCommune: '',
-          residenceWilaya: '', residenceCommune: '', personalAddress: '', gender: 'ذكر', maritalStatus: 'أعزب(ة)', phone: '', email: '',
-          nationalServiceStatus: '', nsRefNum: '', nsIssueDate: '', degree: '', degreeSpecialty: '', gradDate: '', issuingInstitution: '',
-          overallGpa: '', isHigherSchoolGraduate: 'لا', isTopOfClass: 'لا', hasPublications: 'لا', hasProfessionalExp: 'لا', hasJob: 'لا', status: 'قيد الانتظار'
-        };
-
-        const [formData, setFormData] = useState(initialForm);
+        const [formData, setFormData] = useState({
+          wilaya: '', rank: '', nin: '', lastNameAr: '', firstNameAr: '', phone: '', email: '', status: 'قيد الانتظار'
+        });
         const [isSubmitting, setIsSubmitting] = useState(false);
-        const [showSuccessModal, setShowSuccessModal] = useState(false);
-        const [requiredDocs, setRequiredDocs] = useState([]);
+        const [showSuccess, setShowSuccess] = useState(false);
 
         const handleChange = (e) => {
           const { name, value } = e.target;
           setFormData(prev => ({ ...prev, [name]: value }));
         };
 
-        const calculateRequiredDocs = () => {
-          const docs = ["بطاقة إقامة سارية المفعول.", "نسخة من الشهادة المطلوبة.", "كشوف نقاط المسار الدراسي."];
-          if (formData.gender === 'ذكر') docs.push("شهادة الخدمة الوطنية.");
-          if (formData.hasProfessionalExp === 'نعم') docs.push("شهادات عمل الخبرة.");
-          return docs;
-        };
-
-        // 3. دالة الإرسال إلى Firebase
         const handleSubmit = (e) => {
           e.preventDefault();
           setIsSubmitting(true);
 
-          const finalSubmission = {
+          const submission = {
             ...formData,
             submissionDate: new Date().toLocaleString('ar-DZ'),
             timestamp: firebase.database.ServerValue.TIMESTAMP
           };
 
-          db.ref('submissions').push(finalSubmission)
+          // الإرسال الفعلي لـ Realtime Database
+          db.ref('submissions').push(submission)
             .then(() => {
-              setRequiredDocs(calculateRequiredDocs());
               setIsSubmitting(false);
-              setShowSuccessModal(true);
+              setShowSuccess(true);
             })
-            .catch((error) => {
+            .catch((err) => {
               setIsSubmitting(false);
-              alert("خطأ في الاتصال بالسحابة: " + error.message);
+              alert("فشل الإرسال: " + err.message);
             });
         };
 
         return (
-          <div className="min-h-screen flex flex-col">
-            <header className="bg-admin-blue text-white p-8 shadow-2xl text-center">
+          <div className="min-h-screen pb-20">
+            <header className="bg-admin-blue text-white p-10 text-center shadow-xl mb-10">
               <h1 className="text-4xl font-black mb-2">استمارة التوظيف الإلكترونية</h1>
-              <p className="text-xl font-bold text-dz-green">نظام التسجيل السحابي (Firebase)</p>
+              <p className="text-dz-green font-bold">بوابة د.عبد المجيد - حفظ سحابي مباشر</p>
             </header>
 
-            <main className="max-w-7xl mx-auto w-full p-4 md:p-12">
-              <form onSubmit={handleSubmit}>
-                <FormCard title="1. معلومات التعيين" icon={<Briefcase />}>
-                  <InputField label="مديرية التربية لولاية" name="wilaya" required value={formData.wilaya} onChange={handleChange} options={WILAYAS} />
+            <main className="max-w-4xl mx-auto px-4">
+              <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[2rem] shadow-sm border-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <InputField label="الولاية" name="wilaya" required value={formData.wilaya} onChange={handleChange} options={WILAYAS} />
                   <InputField label="الرتبة" name="rank" required value={formData.rank} onChange={handleChange} options={['أستاذ ابتدائي', 'أستاذ متوسط', 'أستاذ ثانوي']} />
-                  <InputField label="مادة التدريس" name="teachingSubject" required value={formData.teachingSubject} onChange={handleChange} />
-                </FormCard>
-
-                <FormCard title="2. الهوية الشخصية" icon={<User />}>
                   <InputField label="رقم التعريف الوطني (NIN)" name="nin" required maxLength={18} value={formData.nin} onChange={handleChange} />
                   <InputField label="اللقب (عربي)" name="lastNameAr" required value={formData.lastNameAr} onChange={handleChange} />
                   <InputField label="الاسم (عربي)" name="firstNameAr" required value={formData.firstNameAr} onChange={handleChange} />
-                  <InputField label="الهاتف" name="phone" required maxLength={10} value={formData.phone} onChange={handleChange} />
-                </FormCard>
-
-                <FormCard title="3. بيانات الاتصال" icon={<Mail />} className="email-final-section">
-                   <div className="md:col-span-3">
-                    <InputField label="البريد الإلكتروني الشخصي" name="email" type="email" required value={formData.email} onChange={handleChange} placeholder="example@mail.com" />
-                   </div>
-                </FormCard>
-
-                <div className="flex justify-center mt-10">
-                  <button type="submit" disabled={isSubmitting} className={`bg-dz-green text-white text-3xl font-black py-6 px-24 rounded-[2rem] shadow-xl hover:scale-105 transition-all ${isSubmitting ? 'loading-pulse opacity-70' : ''}`}>
-                    {isSubmitting ? 'جاري الحفظ سحابياً...' : 'إرسال الملف'}
-                  </button>
+                  <InputField label="رقم الهاتف" name="phone" required maxLength={10} value={formData.phone} onChange={handleChange} />
+                  <div className="md:col-span-2">
+                    <InputField label="البريد الإلكتروني" name="email" type="email" required value={formData.email} onChange={handleChange} />
+                  </div>
                 </div>
+
+                <button type="submit" disabled={isSubmitting} className={`w-full mt-8 bg-dz-green text-white py-6 rounded-2xl text-2xl font-black shadow-lg transition-transform hover:scale-[1.02] ${isSubmitting ? 'loading-pulse' : ''}`}>
+                  {isSubmitting ? 'جاري الحفظ سحابياً...' : 'إرسال الملف الآن'}
+                </button>
               </form>
             </main>
 
-            {showSuccessModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-bg">
-                <div className="bg-white rounded-[3rem] w-full max-w-xl p-10 text-center animate-in zoom-in-95">
-                  <div className="text-dz-green flex justify-center mb-6"><CheckCircle size={80} /></div>
+            {showSuccess && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+                <div className="bg-white rounded-[3rem] p-12 text-center max-w-lg shadow-2xl">
+                  <div className="text-dz-green text-6xl mb-6">✓</div>
                   <h2 className="text-3xl font-black mb-4">تم التسجيل بنجاح!</h2>
-                  <p className="text-lg font-bold text-slate-600 mb-8">لقد تم حفظ بياناتك في قاعدة البيانات السحابية. يرجى تجهيز ملفك الورقي.</p>
-                  <button onClick={() => { setShowSuccessModal(false); setFormData(initialForm); }} className="w-full bg-dz-green text-white py-4 rounded-2xl font-black">إغلاق</button>
+                  <p className="text-slate-600 font-bold mb-8">لقد استلمنا ملفك الإلكتروني عبر السحابة بنجاح.</p>
+                  <button onClick={() => { setShowSuccess(false); window.location.reload(); }} className="bg-dz-green text-white px-10 py-4 rounded-xl font-bold">إغلاق</button>
                 </div>
               </div>
             )}
@@ -205,4 +157,3 @@
     </script>
   </body>
 </html>
-
