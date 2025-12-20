@@ -3,19 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>استمارة المعلومات الكاملة - د.عبد المجيد</title>
+    <title>استمارة معلومات لمسابقة التوظيف - د.عبد المجيد</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- 1. مكتبات Firebase (الإصدار المتوافق) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
+    <!-- 2. مكتبات React -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
+      // 3. إعدادات Firebase الخاصة بك
       const firebaseConfig = {
         apiKey: "AIzaSyBdlRDPTQqY8lZvD4R7nneXAwPgRbxmm14",
         authDomain: "councour-59e43.firebaseapp.com",
@@ -25,14 +28,20 @@
         messagingSenderId: "492907661374",
         appId: "1:492907661374:web:31792fc3ab95d0e69ea96f"
       };
+
+      // تهيئة Firebase
       firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
+      const db = firebase.database(); // تعريف قاعدة البيانات
 
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: { sans: ['Tajawal', 'sans-serif'] },
-            colors: { 'dz-green': '#008568', 'admin-blue': '#0f172a' }
+            colors: {
+              'dz-green': '#008568',
+              'dz-green-dark': '#006b54',
+              'admin-blue': '#0f172a',
+            }
           },
         },
       }
@@ -94,7 +103,6 @@
         backdrop-filter: blur(8px);
       }
     </style>
-  <link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-slate-100 font-sans text-right text-slate-900 leading-relaxed">
     <div id="root"></div>
@@ -202,72 +210,64 @@
         }, [formData.startYear, formData.endYear]);
 
         const handleChange = (e) => {
-  const { name, value } = e.target;
+          const { name, value } = e.target;
 
-  // --- 1. حماية حقول الإيميل (المترشح + الإدارة) ---
-  // يمنع العربية تماماً ويقبل فقط حروف لاتينية، أرقام، والرموز المعيارية للإيميل
-  if (name === 'email' || name === 'adminEmail') {
-    const safeEmail = value.replace(/[^\w@.\-]/g, ''); 
-    setFormData(prev => ({ ...prev, [name]: safeEmail }));
-    return;
-  }
+          // 1. Email protection
+          if (name === 'email' || name === 'adminEmail') {
+            const safeEmail = value.replace(/[^\w@.\-]/g, ''); 
+            setFormData(prev => ({ ...prev, [name]: safeEmail }));
+            return;
+          }
 
-  // --- 2. حماية حقول الأرقام (الهاتف + NIN) ---
-  if (['phone', 'adminPhone', 'nin', 'childrenCount'].includes(name)) {
-    const onlyNums = value.replace(/[^0-9]/g, '');
-    
-    // شروط الهاتف (05, 06, 07)
-    if (name === 'phone' || name === 'adminPhone') {
-      if (onlyNums.length > 10) return;
-      if (onlyNums.length === 1 && onlyNums !== "0") return;
-      if (onlyNums.length === 2 && !/^[567]$/.test(onlyNums[1])) return;
-    }
-    
-    // شروط NIN (10, 11, 12)
-    if (name === 'nin') {
-      if (onlyNums.length > 18) return;
-      if (onlyNums.length === 1 && onlyNums !== "1") return;
-      if (onlyNums.length === 2 && !/^[012]$/.test(onlyNums[1])) return;
-    }
+          // 2. Numbers protection
+          if (['phone', 'adminPhone', 'nin', 'childrenCount'].includes(name)) {
+            const onlyNums = value.replace(/[^0-9]/g, '');
+            if (name === 'phone' || name === 'adminPhone') {
+              if (onlyNums.length > 10) return;
+              if (onlyNums.length === 1 && onlyNums !== "0") return;
+              if (onlyNums.length === 2 && !/^[567]$/.test(onlyNums[1])) return;
+            }
+            if (name === 'nin') {
+              if (onlyNums.length > 18) return;
+              if (onlyNums.length === 1 && onlyNums !== "1") return;
+              if (onlyNums.length === 2 && !/^[012]$/.test(onlyNums[1])) return;
+            }
+            setFormData(prev => ({ ...prev, [name]: onlyNums }));
+            return;
+          }
 
-    setFormData(prev => ({ ...prev, [name]: onlyNums }));
-    return;
-  }
+          // 3. Arabic protection
+          if (['lastNameAr', 'firstNameAr', 'fatherName', 'motherLastName', 'motherFirstName', 'birthCommune', 'residenceCommune', 'teachingSubject' , 'birthCommune' , 'personalAddress', 'teachingSubject', 'residenceCommune','degreeSpecialty','issuingInstitution','otherDegreeName','otherDegreeSpecialty','otherDegreeIssuer','pubNature','pubJournal','pubIssue'].includes(name)) {
+            const onlyAr = value.replace(/[^\u0600-\u06FF\s]/g, '');
+            setFormData(prev => ({ ...prev, [name]: onlyAr }));
+            return;
+          }
 
-  // --- 3. حماية الحقول العربية (الأسماء والعناوين) ---
-  if (['lastNameAr', 'firstNameAr', 'fatherName', 'motherLastName', 'motherFirstName', 'birthCommune', 'residenceCommune', 'eachingSubject' , 'birthCommune' , 'personalAddress', 'teachingSubject', 'residenceCommune','degreeSpecialty','issuingInstitution','otherDegreeName','otherDegreeSpecialty','otherDegreeIssuer','pubNature','pubJournal','pubIssue'].includes(name)) {
-    const onlyAr = value.replace(/[^\u0600-\u06FF\s]/g, '');
-    setFormData(prev => ({ ...prev, [name]: onlyAr }));
-    return;
-  }
+          // 4. Latin protection
+          if (['lastNameLat', 'firstNameLat', 'birthCommune'].includes(name)) {
+            const onlyLat = value.replace(/[^a-zA-Z\s]/g, '');
+            setFormData(prev => ({ ...prev, [name]: onlyLat }));
+            return;
+          }
 
-  // --- 4. حماية الحقول الفرنسية (الأسماء اللاتينية) ---
-  if (['lastNameLat', 'firstNameLat', 'birthCommune'].includes(name)) {
-    const onlyLat = value.replace(/[^a-zA-Z\s]/g, '');
-    setFormData(prev => ({ ...prev, [name]: onlyLat }));
-    return;
-  }
+          setFormData(prev => ({ ...prev, [name]: value }));
+        };
 
-  // بقية الحقول العادية
-  setFormData(prev => ({ ...prev, [name]: value }));
-};
-const handleAcademicYearChange = (year, field, value) => {
-  setFormData(prev => ({
-    ...prev,
-    academicYears: {
-      ...prev.academicYears,
-      [`Year${year}`]: {
-        ...prev.academicYears[`Year${year}`],
-        [field]: value
-      }
-    }
-  }));
-};
-
+        const handleAcademicYearChange = (year, field, value) => {
+          setFormData(prev => ({
+            ...prev,
+            academicYears: {
+              ...prev.academicYears,
+              [`Year${year}`]: {
+                ...prev.academicYears[`Year${year}`],
+                [field]: value
+              }
+            }
+          }));
+        };
 
         const calculateRequiredDocs = () => {
           const docs = [];
-          
           if (formData.residenceCommune) docs.push("بطاقة إقامة سارية المفعول.");
           if (formData.degree) docs.push(`نسخة من الشهادة المطلوبة (${formData.degree}) في التخصص المعني.`);
           if (formData.gender === 'ذكر' && formData.nationalServiceStatus) docs.push("شهادة تثبت وضعية المترشح تجاه الخدمة الوطنية.");
@@ -277,49 +277,49 @@ const handleAcademicYearChange = (year, field, value) => {
           if (formData.hasJob === 'نعم') docs.push("وثيقة تثبت الوظيفة الحالية.");
           if (formData.hasOtherDegrees === 'نعم') docs.push("نسخة من شهادة الدراسات العليا الإضافية.");
           if (formData.hasPublications === 'نعم') docs.push("نسخ من المقالات المنشورة أو الأعمال العلمية والبحثية المنجزة.");
-          
           return docs;
         };
-// دالة الإرسال الحقيقي إلى السحاب
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
 
-  try {
-    const submissionId = Date.now().toString();
-    const submissionData = {
-      ...formData,
-      id: submissionId,
-      submissionDate: new Date().toLocaleString('ar-DZ'),
-      status: 'قيد الانتظار'
-    };
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setIsSubmitting(true);
+          
+          try {
+            // Generate a unique ID for the submission
+            const submissionId = Date.now().toString();
+            
+            // Prepare data with ID and date
+            const finalData = {
+              ...formData,
+              id: submissionId,
+              submissionDate: new Date().toLocaleString('ar-DZ'),
+              status: 'قيد الانتظار'
+            };
 
-    // الإرسال الفعلي لـ Firebase Realtime Database
-    await db.ref('submissions/' + submissionId).set(submissionData);
+            // *** FIREBASE SUBMISSION ***
+            // Sending data to 'submissions' node
+            await db.ref('submissions/' + submissionId).set(finalData);
+            
+            // Calculate docs and show success modal
+            const docsList = calculateRequiredDocs();
+            setRequiredDocs(docsList);
+            setIsSubmitting(false);
+            setShowSuccessModal(true);
 
-    // حساب الوثائق وإظهار نافذة النجاح
-    const docsList = calculateRequiredDocs();
-    setRequiredDocs(docsList);
-    setIsSubmitting(false);
-    setShowSuccessModal(true);
-  } catch (error) {
-    console.error("Firebase Error:", error);
-    alert("حدث خطأ في الاتصال بالسحابة: " + error.message);
-    setIsSubmitting(false);
-  }
-};
+          } catch (error) {
+            console.error("Error writing to Firebase:", error);
+            alert("حدث خطأ أثناء إرسال الاستمارة، يرجى المحاولة مرة أخرى.");
+            setIsSubmitting(false);
+          }
+        };
 
-// دالة إغلاق نافذة النجاح وتفريغ الاستمارة
-const closeSuccess = () => {
-  setShowSuccessModal(false);
-  setFormData(initialForm);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+        const closeSuccess = () => {
+          setShowSuccessModal(false);
+          setFormData(initialForm);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
 
-// منطق إظهار حقل عدد الأولاد
-const showChildrenField = formData.maritalStatus === 'متزوج(ة)' || 
-                           formData.maritalStatus === 'مطلق(ة)' || 
-                           formData.maritalStatus === 'أرمل(ة)';
+        const showChildrenField = formData.maritalStatus === 'متزوج(ة)' || formData.maritalStatus === 'مطلق(ة)' || formData.maritalStatus === 'أرمل(ة)';
 
         return (
           <div className="min-h-screen flex flex-col">
@@ -342,79 +342,54 @@ const showChildrenField = formData.maritalStatus === 'متزوج(ة)' ||
 
                 {/* 2. Identity Info */}
                 <FormCard title="2. المعلومات الشخصية" icon={<User />}>
-  {/* 1. رقم التعريف الوطني */}
-  <InputField 
-    label="رقم التعريف الوطني (NIN)" 
-    name="nin" 
-    required 
-    value={formData.nin} 
-    onChange={handleChange} 
-    maxLength={18} 
-    placeholder="رقم بطاقة التعريف الوطني الطويل" 
-  />
-
-  {/* 2. اللقب والاسم بالعربية */}
-  <InputField label="اللقب (بالعربية)" name="lastNameAr" required value={formData.lastNameAr} onChange={handleChange} />
-  <InputField label="الاسم (بالعربية)" name="firstNameAr" required value={formData.firstNameAr} onChange={handleChange} />
-
-  {/* 3. اللقب والاسم بالفرنسية */}
-  <InputField label="اللقب باللغة الفرنسية" name="lastNameLat" required value={formData.lastNameLat} onChange={handleChange} />
-  <InputField label="الاسم باللغة الفرنسية" name="firstNameLat" required value={formData.firstNameLat} onChange={handleChange} />
-
-  {/* 4. معلومات الوالدين */}
-  <InputField label="اسم الأب" name="fatherName" required value={formData.fatherName} onChange={handleChange} />
-  <InputField label="لقب الأم" name="motherLastName" required value={formData.motherLastName} onChange={handleChange} />
-  <InputField label="اسم الأم" name="motherFirstName" required value={formData.motherFirstName} onChange={handleChange} />
-
-  {/* 5. الميلاد */}
-  <InputField label="تاريخ الازدياد" name="birthDate" type="date" required value={formData.birthDate} onChange={handleChange} />
-  <InputField label="ولاية الميلاد" name="birthWilaya" required value={formData.birthWilaya} onChange={handleChange} options={WILAYAS} />
-  <InputField label="بلدية الميلاد" name="birthCommune" required value={formData.birthCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
-
-  {/* 6. الجنس والحالة العائلية */}
-  <InputField label="الجنس" name="gender" required value={formData.gender} onChange={handleChange} options={['ذكر', 'أنثى']} />
-  <InputField label="الحالة العائلية" name="maritalStatus" required value={formData.maritalStatus} onChange={handleChange} options={['أعزب(ة)', 'متزوج(ة)', 'مطلق(ة)', 'أرمل(ة)']} />
-  
-  {/* عدد الأولاد يظهر فقط إذا لم تكن الحالة "أعزب" */}
-  {showChildrenField && (
-    <InputField label="عدد الأولاد" name="childrenCount" type="number" required value={formData.childrenCount} onChange={handleChange} placeholder="0" />
-  )}
-
-  {/* 7. السكن والاتصال */}
-  <InputField label="ولاية الإقامة" name="residenceWilaya" required value={formData.residenceWilaya} onChange={handleChange} options={WILAYAS} />
-  <InputField label="بلدية الإقامة" name="residenceCommune" required value={formData.residenceCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
-  
-  <div className="md:col-span-2 lg:col-span-3">
-    <InputField label="العنوان الشخصي" name="personalAddress" required value={formData.personalAddress} onChange={handleChange} placeholder="اكتب عنوانك الشخصي بالتفصيل" />
-  </div>
-
-  <InputField label="رقم الهاتف الشخصي" name="phone" required value={formData.phone} onChange={handleChange} maxLength={10} />
-</FormCard>
+                  <InputField label="رقم التعريف الوطني (NIN)" name="nin" required value={formData.nin} onChange={handleChange} maxLength={18} placeholder="رقم بطاقة التعريف الوطني الطويل " />
+                  <InputField label="اللقب (بالعربية)" name="lastNameAr" required value={formData.lastNameAr} onChange={handleChange} />
+                  <InputField label="الاسم (بالعربية)" name="firstNameAr" required value={formData.firstNameAr} onChange={handleChange} />
+                  <InputField label="اللقب باللغة الفرنسية" name="lastNameLat" required value={formData.lastNameLat} onChange={handleChange} />
+                  <InputField label="الاسم باللغة الفرنسية" name="firstNameLat" required value={formData.firstNameLat} onChange={handleChange} />
+                  <InputField label="اسم الأب" name="fatherName" required value={formData.fatherName} onChange={handleChange} />
+                  <InputField label="لقب الأم" name="motherLastName" required value={formData.motherLastName} onChange={handleChange} />
+                  <InputField label="اسم الأم" name="motherFirstName" required value={formData.motherFirstName} onChange={handleChange} />
+                  <InputField label="الجنس" name="gender" required value={formData.gender} onChange={handleChange} options={['ذكر', 'أنثى']} />
+                  <InputField label="الحالة العائلية" name="maritalStatus" required value={formData.maritalStatus} onChange={handleChange} options={['أعزب(ة)', 'متزوج(ة)', 'مطلق(ة)', 'أرمل(ة)']} />
+                  {showChildrenField && (
+                    <InputField label="عدد الأولاد" name="childrenCount" type="number" required value={formData.childrenCount} onChange={handleChange} placeholder="0" />
+                  )}
+                  <InputField label="تاريخ الازدياد" name="birthDate" type="date" required value={formData.birthDate} onChange={handleChange} />
+                  <InputField label="ولاية الميلاد" name="birthWilaya" required value={formData.birthWilaya} onChange={handleChange} options={WILAYAS} />
+                  <InputField label="بلدية الميلاد" name="birthCommune" required value={formData.birthCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
+                </FormCard>
 
                 {/* 3. Residence Info & National Service */}
                 <FormCard title="3. الخدمة الوطنية" icon={<Home />}>
-                {/* National Service Section */}
                   {formData.gender === 'ذكر' && (
                     <div className="md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-slate-50 border-2 border-dz-green/10 rounded-3xl mt-4">
                       <div className="md:col-span-2 lg:col-span-3">
-                        <h4 className="font-black text-dz-green mb-4">الخدمة الوطنية</h4>
+                        <h4 className="font-black text-dz-green mb-4">الوضعية اتجاه الخدمة الوطنية</h4>
                       </div>
-                      <InputField label="الوضعية" name="nationalServiceStatus" required value={formData.nationalServiceStatus} onChange={handleChange} options={['مؤدى', 'معفى', 'مؤجل'  ]} />
+                      <InputField label="الوضعية" name="nationalServiceStatus" required value={formData.nationalServiceStatus} onChange={handleChange} options={['مؤدى', 'معفى', 'مؤجل', 'في طور الإنجاز']} />
                       <InputField label="رقم مرجع الوثيقة" name="nsRefNum" required value={formData.nsRefNum} onChange={handleChange} placeholder="مثال: 123/2024" />
                       <InputField label="تاريخ إصدار الوثيقة" name="nsIssueDate" type="date" required value={formData.nsIssueDate} onChange={handleChange} />
                       <InputField label="تاريخ انتهاء الوثيقة" name="nsExpiryDate" type="date" value={formData.nsExpiryDate} onChange={handleChange} />
-                      
                       {formData.nationalServiceStatus === 'مؤدى' && (
                         <>
                           <InputField label="تاريخ بداية الخدمة" name="nsStartDate" type="date" required value={formData.nsStartDate} onChange={handleChange} />
                           <InputField label="تاريخ نهاية الخدمة" name="nsEndDate" type="date" required value={formData.nsEndDate} onChange={handleChange} />
                         </>
                       )}
-					  
-					 
-					  
                     </div>
                   )}
+                  <div className="md:col-span-2 lg:col-span-3 mt-4">
+                    <h4 className="font-black text-slate-800 mb-4">معلومات الإقامة</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <InputField label="ولاية الإقامة" name="residenceWilaya" required value={formData.residenceWilaya} onChange={handleChange} options={WILAYAS} />
+                        <InputField label="بلدية الإقامة" name="residenceCommune" required value={formData.residenceCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
+                        <InputField label="رقم الهاتف الشخصي" name="phone" required value={formData.phone} onChange={handleChange} maxLength={10} />
+                        <div className="md:col-span-2 lg:col-span-3">
+                            <InputField label="العنوان الشخصي" name="personalAddress" required value={formData.personalAddress} onChange={handleChange} placeholder="اكتب عنوانك الشخصي بالتفصيل" />
+                        </div>
+                    </div>
+                  </div>
                 </FormCard>
 
                 {/* 4. Education Info */}
@@ -423,52 +398,31 @@ const showChildrenField = formData.maritalStatus === 'متزوج(ة)' ||
                   <InputField label="الشعبة / التخصص" name="degreeSpecialty" required value={formData.degreeSpecialty} onChange={handleChange} />
                   <InputField label="رقم الشهادة" name="degreeCertNum" required value={formData.degreeCertNum} onChange={handleChange} placeholder="اكتب رقم الشهادة" />
                   <InputField label="تاريخ  التخرج (المداولات)" name="gradDate" type="date" required value={formData.gradDate} onChange={handleChange} />
-				  <InputField label="المؤسسة المسلمة للشهادة" name="issuingInstitution" required value={formData.issuingInstitution} onChange={handleChange} />
-				   {/* Academic Path */}
+                  <InputField label="المؤسسة المسلمة للشهادة" name="issuingInstitution" required value={formData.issuingInstitution} onChange={handleChange} />
+                  
+                  {/* Academic Path */}
                   <div className="md:col-span-3 p-8 bg-dz-green/5 rounded-[2.5rem] border-2 border-dz-green/10 my-4">
                     <h3 className="font-black text-dz-green mb-6 text-xl">المسار الدراسي (المعدلات السنوية)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                      <InputField label="من" name="startYear" type="number" value={formData.startYear} onChange={handleChange} placeholder="مثال: 2018" />
-                      <InputField label="الى" name="endYear" type="number" value={formData.endYear} onChange={handleChange} placeholder="مثال: 2021" />
+                      <InputField label="من (سنة البداية)" name="startYear" type="number" value={formData.startYear} onChange={handleChange} placeholder="مثال: 2018" />
+                      <InputField label="الى (سنة التخرج)" name="endYear" type="number" value={formData.endYear} onChange={handleChange} placeholder="مثال: 2021" />
                     </div>
-				  {academicYearsCount > 0 && Array.from({ length: academicYearsCount }).map((_, idx) => {
-  const yearKey = `Year${idx + 1}`;
-  return (
-    <div key={yearKey} className="year-strip grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-      <div className="font-black text-dz-green">السنة {idx + 1}</div>
-      <InputField 
-        label="معدل سداسي 1" 
-        type="number" 
-        step="0.01" 
-        value={formData.academicYears[yearKey]?.s1 || ''} 
-        onChange={(e) => handleAcademicYearChange(idx + 1, 's1', e.target.value)} 
-      />
-      <InputField 
-        label="معدل سداسي 2" 
-        type="number" 
-        step="0.01" 
-        value={formData.academicYears[yearKey]?.s2 || ''} 
-        onChange={(e) => handleAcademicYearChange(idx + 1, 's2', e.target.value)} 
-      />
-      <InputField 
-        label="المعدل السنوي" 
-        type="number" 
-        step="0.01" 
-        value={formData.academicYears[yearKey]?.ann || ''} 
-        onChange={(e) => handleAcademicYearChange(idx + 1, 'ann', e.target.value)} 
-      />
-    </div>
-  );
-})}
-<InputField 
-  label="تقدير الشهادة" 
-  name="degreeAppreciation" 
-  required 
-  value={formData.degreeAppreciation} 
-  onChange={handleChange} 
-  options={['مقبول', 'حسن', 'حسن جدا']} 
-/>                  <InputField label="هل أنت خريج مدرسة وطنية عليا؟" name="isHigherSchoolGraduate" required value={formData.isHigherSchoolGraduate} onChange={handleChange} options={['نعم', 'لا']} />
-                <div className="md:col-span-2 lg:col-span-3">
+                    {academicYearsCount > 0 && Array.from({ length: academicYearsCount }).map((_, idx) => {
+                      const yearKey = `Year${idx + 1}`;
+                      return (
+                        <div key={yearKey} className="year-strip grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                          <div className="font-black text-dz-green">السنة {idx + 1}</div>
+                          <InputField label="معدل سداسي 1" type="number" step="0.01" value={formData.academicYears[yearKey]?.s1 || ''} onChange={(e) => handleAcademicYearChange(idx + 1, 's1', e.target.value)} />
+                          <InputField label="معدل سداسي 2" type="number" step="0.01" value={formData.academicYears[yearKey]?.s2 || ''} onChange={(e) => handleAcademicYearChange(idx + 1, 's2', e.target.value)} />
+                          <InputField label="المعدل السنوي" type="number" step="0.01" value={formData.academicYears[yearKey]?.ann || ''} onChange={(e) => handleAcademicYearChange(idx + 1, 'ann', e.target.value)} />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <InputField label="تقدير الشهادة" name="degreeAppreciation" required value={formData.degreeAppreciation} onChange={handleChange} options={['مقبول', 'قريب من الحسن', 'حسن', 'حسن جدا', 'مشرف', 'مشرف جدا']} />
+                  <InputField label="هل أنت خريج مدرسة وطنية عليا؟" name="isHigherSchoolGraduate" required value={formData.isHigherSchoolGraduate} onChange={handleChange} options={['نعم', 'لا']} />
+                  <div className="md:col-span-2 lg:col-span-3">
                     <InputField label="هل أنت الأول في الدفعة؟" name="isTopOfClass" required value={formData.isTopOfClass} onChange={handleChange} options={['نعم', 'لا']} />
                     {formData.isTopOfClass === 'نعم' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-amber-50 border-2 border-amber-200 rounded-3xl mt-2 mb-4 animate-in slide-in-from-top-4 duration-300">
@@ -482,34 +436,20 @@ const showChildrenField = formData.maritalStatus === 'متزوج(ة)' ||
                   <InputField label="المعدل العام للمسار الدراسي" name="overallGpa" type="number" step="0.01" required value={formData.overallGpa} onChange={handleChange} placeholder="00.00" />
                   <InputField label="علامة المذكرة (إن وجدت)" name="thesisGrade" type="number" step="0.01" value={formData.thesisGrade} onChange={handleChange} placeholder="00.00" />
 
-                 
-                    
-					
-					
+                  {/* Other Degrees */}
+                  <div className="md:col-span-3 mt-6">
+                    <InputField label="هل لديك شهادات عليا أخرى (ماجستير، دكتوراة ثانية...)؟" name="hasOtherDegrees" required value={formData.hasOtherDegrees} onChange={handleChange} options={['نعم', 'لا']} />
+                    {formData.hasOtherDegrees === 'نعم' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/50 rounded-[2.5rem] border-2 border-blue-100 mt-4">
+                        <InputField label="اسم الشهادة" name="otherDegreeName" value={formData.otherDegreeName || ''} onChange={handleChange} />
+                        <InputField label="التخصص" name="otherDegreeSpecialty" value={formData.otherDegreeSpecialty || ''} onChange={handleChange} />
+                        <InputField label="الجهة المسلمة" name="otherDegreeIssuer" value={formData.otherDegreeIssuer || ''} onChange={handleChange} />
+                        <InputField label="عدد السداسيات" name="nmsemester" type="number" value={formData.nmsemester || ''} onChange={handleChange} />
+                        <InputField label="من سنة " name="otherStartYear" type="number" value={formData.otherStartYear || ''} onChange={handleChange} />
+                        <InputField label="إلى سنة" name="otherEndYear" type="number" value={formData.otherEndYear || ''} onChange={handleChange} />
+                      </div>
+                    )}
                   </div>
-
-            </FormCard>      
-				
-  
-					 
-<FormCard title="شهادات عليا أخرى " icon={<BookOpen />}>
-<div className="md:col-span-3 ">
-  <InputField label="هل لديك شهادات عليا أخرى (ماجستير، دكتوراة ثانية...)؟" name="hasOtherDegrees" required value={formData.hasOtherDegrees} onChange={handleChange} options={['نعم', 'لا']} />
- {formData.hasOtherDegrees === 'نعم' && (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/50 rounded-[2.5rem] border-2 border-blue-100 mt-4">
-    <InputField label="اسم الشهادة" name="otherDegreeName" value={formData.otherDegreeName || ''} onChange={handleChange} />
-    <InputField label="التخصص" name="otherDegreeSpecialty" value={formData.otherDegreeSpecialty || ''} onChange={handleChange} />
-    <InputField label="الجهة المسلمة" name="otherDegreeIssuer" value={formData.otherDegreeIssuer || ''} onChange={handleChange} />
-    <InputField label="عدد السداسيات" name="nmsemester" type="number" value={formData.nmsemester || ''} onChange={handleChange} />
-    <InputField label="من" name="otherStartYear" type="number" value={formData.otherStartYear || ''} onChange={handleChange} />
-    <InputField label="الى" name="otherEndYear" type="number" value={formData.otherEndYear || ''} onChange={handleChange} />
-  </div>
-)}
-</div>
-
-
-
-					
                 </FormCard>
 
                 {/* 5. Publications Section */}
@@ -536,32 +476,19 @@ const showChildrenField = formData.maritalStatus === 'متزوج(ة)' ||
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-200 mt-4">
                         <div className="md:col-span-3"><InputField label="فئة الخبرة المهنية" name="expType" required value={formData.expType} onChange={handleChange} options={EXP_TYPES} /></div>
                         
-						{/* قسم الخبرة المهنية المرتب والمعدل */}
+                        <InputField label="المنصب المشغول" name="expJob" required value={formData.expJob} onChange={handleChange} />
+                        <InputField label="تسمية المؤسسة أو الإدارة" name="expInstitution" required value={formData.expInstitution} onChange={handleChange} />
+                        
+                        <InputField label="تسمية الشهادة المعتمدة" name="expCertType" required value={formData.expCertType} onChange={handleChange} placeholder="مثال: شهادة عمل أو عقد عمل" />
+                        <InputField label="رقم الشهادة/العقد" name="expCertNum" required value={formData.expCertNum} onChange={handleChange} />
+                        <InputField label="تاريخ الشهادة" name="expCertDate" type="date" required value={formData.expCertDate} onChange={handleChange} />
 
-  <InputField label="المنصب المشغول" name="expJob" required value={formData.expJob} onChange={handleChange} />
-  <InputField label="تسمية المؤسسة أو الإدارة" name="expInstitution" required value={formData.expInstitution} onChange={handleChange} />
-  
-  {/* 2. تفاصيل الشهادة المعتمدة للخبرة */}
-  <InputField label="تسمية الشهادة المعتمدة" name="expCertName" required value={formData.expCertName} onChange={handleChange} placeholder="مثال: شهادة عمل أو عقد عمل" />
-  <InputField label="رقم الشهادة/العقد" name="expCertNum" required value={formData.expCertNum} onChange={handleChange} />
-  <InputField label="تاريخ الشهادة" name="expCertDate" type="date" required value={formData.expCertDate} onChange={handleChange} />
-
-  {/* 3. الفترة الزمنية */}
-  <InputField label="تاريخ بداية العمل (من)" name="expStartDate" type="date" required value={formData.expStartDate} onChange={handleChange} />
-  <InputField label="تاريخ نهاية العمل (إلى)" name="expEndDate" type="date" required value={formData.expEndDate} onChange={handleChange} />
-  
-  {/* 4. إنهاء العلاقة */}
-  <div className="md:col-span-2 lg:col-span-3">
-    <InputField label="سبب إنهاء علاقة العمل" name="expTerminationReason" value={formData.expTerminationReason} onChange={handleChange} placeholder="اكتب سبب التوقف عن العمل" />
-  </div>
-
-						
-						
-						
-						
-						
-						
-                       
+                        <InputField label="تاريخ بداية العمل (من)" name="expStartDate" type="date" required value={formData.expStartDate} onChange={handleChange} />
+                        <InputField label="تاريخ نهاية العمل (إلى)" name="expEndDate" type="date" required value={formData.expEndDate} onChange={handleChange} />
+                        
+                        <div className="md:col-span-2 lg:col-span-3">
+                          <InputField label="سبب إنهاء علاقة العمل" name="expTerminationReason" value={formData.expTerminationReason} onChange={handleChange} placeholder="اكتب سبب التوقف عن العمل" />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -569,73 +496,65 @@ const showChildrenField = formData.maritalStatus === 'متزوج(ة)' ||
 
                 {/* 7. Current Job Status */}
                 <FormCard title="7. الوضعية المهنية الحالية" icon={<Briefcase />}>
-  <div className="md:col-span-3">
-    <InputField 
-      label="هل تشغل وظيفة حالياً في القطاع العام أو الخاص؟" 
-      name="hasJob" 
-      required 
-      value={formData.hasJob} 
-      onChange={handleChange} 
-      options={['نعم', 'لا']} 
-    />
+                  <div className="md:col-span-3">
+                    <InputField 
+                      label="هل تشغل وظيفة حالياً في القطاع العام أو الخاص؟" 
+                      name="hasJob" 
+                      required 
+                      value={formData.hasJob} 
+                      onChange={handleChange} 
+                      options={['نعم', 'لا']} 
+                    />
 
-    {formData.hasJob === 'نعم' && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/30 rounded-[2.5rem] border-2 border-blue-100 mt-6">
-        
-        {/* 1. معلومات الرتبة */}
-        <InputField label="الرتبة أو الوظيفة المشغولة" name="currentJobRank" required value={formData.currentJobRank} onChange={handleChange} />
-        <InputField label="تاريخ أول تعيين" name="firstAppointDate" type="date" required value={formData.firstAppointDate} onChange={handleChange} />
-        <InputField label="تاريخ التعيين في الرتبة الحالية" name="currentRankDate" type="date" required value={formData.currentRankDate} onChange={handleChange} />
-        
-        {/* 2. التصنيف والمرجع */}
-        <InputField label="الصنف / الدرجة" name="category" required value={formData.category} onChange={handleChange} placeholder="مثال: 11 / 02" />
-        <InputField label="رقم المرجع (القرار/القرار الإطاري)" name="jobRefNum" required value={formData.jobRefNum} onChange={handleChange} />
-        <InputField label="تاريخ المرجع" name="jobRefDate" type="date" required value={formData.jobRefDate} onChange={handleChange} />
-        
-        {/* 3. السلطة والإدارة */}
-        <InputField label="صفة السلطة (صاحب الإمضاء)" name="signingAuthority" required value={formData.signingAuthority} onChange={handleChange} placeholder="مثال: مدير التربية، الوزير..." />
-        
-        <InputField label="رقم هاتف الإدارة" name="adminPhone" required value={formData.adminPhone} onChange={handleChange} maxLength={10} />
-        
-        {/* 4. التواصل والعنوان */}
-        <div className="flex flex-col">
-          <InputField label="البريد الإلكتروني للإدارة" name="adminEmail" type="email" required value={formData.adminEmail} onChange={handleChange} />
-          {formData.adminEmail && formData.adminEmail.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.adminEmail) && (
-            <p className="text-red-500 text-[10px] font-bold mt-1 bg-red-50 p-1 rounded border border-red-100">
-              ⚠️ يجب كتابة الإيميل بالحروف اللاتينية وصيغة صحيحة (example@mail.com)
-            </p>
-          )}
-        </div>
-        
-        <div className="md:col-span-2 lg:col-span-3">
-          <InputField label="عنوان الإدارة" name="adminAddress" required value={formData.adminAddress} onChange={handleChange} placeholder="العنوان الكامل للمؤسسة" />
-        </div>
-      </div>
-    )}
-  </div>
-</FormCard>
+                    {formData.hasJob === 'نعم' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/30 rounded-[2.5rem] border-2 border-blue-100 mt-6">
+                        <InputField label="الرتبة أو الوظيفة المشغولة" name="currentJobRank" required value={formData.currentJobRank} onChange={handleChange} />
+                        <InputField label="تاريخ أول تعيين" name="firstAppointDate" type="date" required value={formData.firstAppointDate} onChange={handleChange} />
+                        <InputField label="تاريخ التعيين في الرتبة الحالية" name="currentRankDate" type="date" required value={formData.currentRankDate} onChange={handleChange} />
+                        <InputField label="الصنف / الدرجة" name="category" required value={formData.category} onChange={handleChange} placeholder="مثال: 11 / 02" />
+                        <InputField label="رقم المرجع (القرار/القرار الإطاري)" name="jobRefNum" required value={formData.jobRefNum} onChange={handleChange} />
+                        <InputField label="تاريخ المرجع" name="jobRefDate" type="date" required value={formData.jobRefDate} onChange={handleChange} />
+						<InputField label="صفة السلطة (صاحب الإمضاء)" name="expInstitution" required value={formData.expInstitution} onChange={handleChange} placeholder="مثال: مدير التربية، الوزير..." />
+                        <InputField label="رقم هاتف الإدارة" name="adminPhone" required value={formData.adminPhone} onChange={handleChange} maxLength={10} />
+                        
+                        <div className="flex flex-col">
+                          <InputField label="البريد الإلكتروني للإدارة" name="adminEmail" type="email" required value={formData.adminEmail} onChange={handleChange} />
+                          {formData.adminEmail && formData.adminEmail.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.adminEmail) && (
+                            <p className="text-red-500 text-[10px] font-bold mt-1 bg-redششثشثش-50 p-1 rounded border border-red-100">
+                              ⚠️ يجب كتابة الإيميل بالحروف اللاتينية وصيغة صحيحة
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="md:col-span-2 lg:col-span-3">
+                          <InputField label="عنوان الإدارة" name="adminAddress" required value={formData.adminAddress} onChange={handleChange} placeholder="العنوان الكامل للمؤسسة" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </FormCard>
 
                 {/* 8. Final Contact */}
                 <FormCard title="8. بيانات الاتصال النهائية" icon={<Mail />} className="email-final-section">
-  <div className="md:col-span-3">
-    <div className="flex flex-col">
-      <InputField 
-        label="البريد الإلكتروني الشخصي للمترشح (إلزامي)" 
-        name="email" 
-        type="email" 
-        required 
-        value={formData.email} 
-        onChange={handleChange} 
-        placeholder="example@mail.com" 
-      />
-      {formData.email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
-        <p className="text-red-500 text-[10px] font-bold -mt-3 mb-2 bg-red-50 p-1 rounded border border-red-100">
-          ⚠️ يرجى إدخال بريد إلكتروني صحيح (يجب أن يحتوي على @ ونقطة)
-        </p>
-      )}
-    </div>
-  </div>
-</FormCard>
+                  <div className="md:col-span-3">
+                    <div className="flex flex-col">
+                      <InputField 
+                        label="البريد الإلكتروني الشخصي للمترشح (إلزامي)" 
+                        name="email" 
+                        type="email" 
+                        required 
+                        value={formData.email} 
+                        onChange={handleChange} 
+                        placeholder="example@mail.com" 
+                      />
+                      {formData.email.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                        <p className="text-red-500 text-[10px] font-bold -mt-3 mb-2 bg-red-50 p-1 rounded border border-red-100">
+                          ⚠️ يرجى إدخال بريد إلكتروني صحيح (يجب أن يحتوي على @ ونقطة)
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </FormCard>
 
                 <div className="flex justify-center mt-10">
                   <button 
@@ -693,6 +612,5 @@ const showChildrenField = formData.maritalStatus === 'متزوج(ة)' ||
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<App />);
     </script>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>

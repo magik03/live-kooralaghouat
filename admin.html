@@ -386,17 +386,17 @@
                         <DetailBlock label="رقم التعريف الوطني (NIN)" value={selected.nin} />
                         <DetailBlock label="اللقب (عربي)" value={selected.lastNameAr} />
                         <DetailBlock label="الاسم (عربي)" value={selected.firstNameAr} />
-                        <DetailBlock label="اللقب (فرنسي)" value={selected.lastNameLat} />
-                        <DetailBlock label="الاسم (فرنسي)" value={selected.firstNameLat} />
+                        <DetailBlock label="اللقب باللغة الفرنسية" value={selected.lastNameLat} />
+                        <DetailBlock label="الاسم باللغة الفرنسية" value={selected.firstNameLat} />
                         <DetailBlock label="اسم الأب" value={selected.fatherName} />
                         <DetailBlock label="لقب الأم" value={selected.motherLastName} />
                         <DetailBlock label="اسم الأم" value={selected.motherFirstName} />
                         <DetailBlock label="الجنس" value={selected.gender} />
                         <DetailBlock label="الحالة العائلية" value={selected.maritalStatus} />
                         <DetailBlock label="عدد الأولاد" value={selected.childrenCount} />
-                        <DetailBlock label="تاريخ الازدياد" value={selected.birthDate} />
-                        <DetailBlock label="مكان الازدياد (ولاية)" value={selected.birthWilaya} />
-                        <DetailBlock label="مكان الازدياد (البلدية)" value={selected.birthCommune} />
+                        <DetailBlock label="تاريخ الميلاد" value={selected.birthDate} />
+                        <DetailBlock label="ولاية الميلاد" value={selected.birthWilaya} />
+                        <DetailBlock label="بلدية الميلاد" value={selected.birthCommune} />
                       </div>
                     </section>
 
@@ -510,8 +510,11 @@
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <DetailBlock label="المنصب" value={selected.expJob} />
                             <DetailBlock label="المؤسسة" value={selected.expInstitution} />
-                            <DetailBlock label="رقم الشهادة/العقد" value={selected.expCertNum} />
-                            <DetailBlock label="من" value={selected.expStartDate} />
+                            <DetailBlock label="شهادة المعتمدة" value={selected.expCertType} />
+							<DetailBlock label="رقم الشهادة/العقد" value={selected.expCertNum} />
+                           	<DetailBlock label="تاريخ  شهادة عقد العمل" value={selected.expCertDate} />
+
+						   <DetailBlock label="من" value={selected.expStartDate} />
                             <DetailBlock label="إلى" value={selected.expEndDate} />
                             <DetailBlock label="سبب التوقف" value={selected.expTerminationReason} />
                           </div>
@@ -526,11 +529,11 @@
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-blue-50/20 p-6 rounded-3xl border border-blue-100">
                           <DetailBlock label="الرتبة الحالية" value={selected.currentJobRank} />
                           <DetailBlock label="تاريخ أول تعيين" value={selected.firstAppointDate} />
-                          <DetailBlock label="ناريخ التعيين في الرتبة الحالية" value={selected.hirAppointDate} />
+                          <DetailBlock label="ناريخ التعيين في الرتبة الحالية" value={selected.currentRankDate} />
                           <DetailBlock label="الصنف (الدرجة)" value={selected.category} />
                           <DetailBlock label="رقم مرجع التعيين" value={selected.jobRefNum} />
                           <DetailBlock label="تاريخ المرجع" value={selected.jobRefDate} />
-                          <DetailBlock label="تسمية الإدارة" value={selected.adminName} />
+                          <DetailBlock label="صفة السلطة (صاحب الإمضاء)" value={selected.expInstitution} />
                           <DetailBlock label="هاتف الإدارة" value={selected.adminPhone} />
                           <DetailBlock label="إيميل الإدارة" value={selected.adminEmail} />
                           <DetailBlock label="عنوان الإدارة" value={selected.adminAddress} />
