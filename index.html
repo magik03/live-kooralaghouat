@@ -240,20 +240,6 @@
   // بقية الحقول العادية
   setFormData(prev => ({ ...prev, [name]: value }));
 };
-const handleAcademicYearChange = (year, field, value) => {
-  setFormData(prev => ({
-    ...prev,
-    academicYears: {
-      ...prev.academicYears,
-      [`Year${year}`]: {
-        ...prev.academicYears[`Year${year}`],
-        [field]: value
-      }
-    }
-  }));
-};
-
-
         const calculateRequiredDocs = () => {
           const docs = [];
           
@@ -331,8 +317,8 @@ const handleAcademicYearChange = (year, field, value) => {
                     <InputField label="عدد الأولاد" name="childrenCount" type="number" required value={formData.childrenCount} onChange={handleChange} placeholder="0" />
                   )}
                   <InputField label="تاريخ الازدياد" name="birthDate" type="date" required value={formData.birthDate} onChange={handleChange} />
-                  <InputField label="ولاية الميلاد" name="birthWilaya" required value={formData.birthWilaya} onChange={handleChange} options={WILAYAS} />
-                  <InputField label="بلدية الميلاد" name="birthCommune" required value={formData.birthCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
+                  <InputField label="مكان الازدياد (ولاية)" name="birthWilaya" required value={formData.birthWilaya} onChange={handleChange} options={WILAYAS} />
+                  <InputField label="مكان الازدياد (البلدية)" name="birthCommune" required value={formData.birthCommune} onChange={handleChange} placeholder="اكتب اسم البلدية" />
                 </FormCard>
 
                 {/* 3. Residence Info & National Service */}
@@ -395,60 +381,34 @@ const handleAcademicYearChange = (year, field, value) => {
                       <InputField label="سنة بداية التكوين" name="startYear" type="number" value={formData.startYear} onChange={handleChange} placeholder="مثال: 2018" />
                       <InputField label="سنة نهاية التكوين" name="endYear" type="number" value={formData.endYear} onChange={handleChange} placeholder="مثال: 2021" />
                     </div>
-                    
-					
-					
+                    {academicYearsCount > 0 && Array.from({ length: academicYearsCount }).map((_, idx) => (
+                      <div key={idx+1} className="year-strip grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <div className="font-black text-dz-green">السنة {idx+1}</div>
+                        <InputField label="معدل سداسي 1" type="number" step="0.01" onChange={(e) => handleAcademicYearChange(idx+1, 's1', e.target.value)} />
+                        <InputField label="معدل سداسي 2" type="number" step="0.01" onChange={(e) => handleAcademicYearChange(idx+1, 's2', e.target.value)} />
+                        <InputField label="المعدل السنوي" type="number" step="0.01" onChange={(e) => handleAcademicYearChange(idx+1, 'ann', e.target.value)} />
+                      </div>
+                    ))}
                   </div>
 
-                  {academicYearsCount > 0 && Array.from({ length: academicYearsCount }).map((_, idx) => {
-  const yearKey = `Year${idx + 1}`;
-  return (
-    <div key={yearKey} className="year-strip grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-      <div className="font-black text-dz-green">السنة {idx + 1}</div>
-      <InputField 
-        label="معدل سداسي 1" 
-        type="number" 
-        step="0.01" 
-        value={formData.academicYears[yearKey]?.s1 || ''} 
-        onChange={(e) => handleAcademicYearChange(idx + 1, 's1', e.target.value)} 
-      />
-      <InputField 
-        label="معدل سداسي 2" 
-        type="number" 
-        step="0.01" 
-        value={formData.academicYears[yearKey]?.s2 || ''} 
-        onChange={(e) => handleAcademicYearChange(idx + 1, 's2', e.target.value)} 
-      />
-      <InputField 
-        label="المعدل السنوي" 
-        type="number" 
-        step="0.01" 
-        value={formData.academicYears[yearKey]?.ann || ''} 
-        onChange={(e) => handleAcademicYearChange(idx + 1, 'ann', e.target.value)} 
-      />
-    </div>
-  );
-})}
+                  {/* Other Degrees */}
+                  <div className="md:col-span-3 mt-6">
+                    <InputField label="هل لديك شهادات عليا أخرى (ماجستير، دكتوراة ثانية...)؟" name="hasOtherDegrees" required value={formData.hasOtherDegrees} onChange={handleChange} options={['نعم', 'لا']} />
+                    {formData.hasOtherDegrees === 'نعم' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/50 rounded-[2.5rem] border-2 border-blue-100 mt-4">
+                        <InputField label="اسم الشهادة" name="otherDegreeName" value={formData.otherDegreeName} onChange={handleChange} />
+                        <InputField label="التخصص" name="otherDegreeSpecialty" value={formData.otherDegreeSpecialty} onChange={handleChange} />
+                        <InputField label="الجهة المسلمة" name="otherDegreeIssuer" value={formData.otherDegreeIssuer} onChange={handleChange} />
+                        <InputField label="عدد السداسيات" name="nmsemester" value={formData.nmsemester} onChange={handleChange} />
+                        <InputField label="سنة بداية التكوين" name="startYear" type="number" value={formData.startYear} onChange={handleChange} placeholder="مثال: 2018" />
+                          <InputField label="سنة نهاية التكوين" name="endYear" type="number" value={formData.endYear} onChange={handleChange} placeholder="مثال: 2021" />
+                    
 					  
-					 
-
-<div className="md:col-span-3 mt-6">
-  <InputField label="هل لديك شهادات عليا أخرى (ماجستير، دكتوراة ثانية...)؟" name="hasOtherDegrees" required value={formData.hasOtherDegrees} onChange={handleChange} options={['نعم', 'لا']} />
- {formData.hasOtherDegrees === 'نعم' && (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/50 rounded-[2.5rem] border-2 border-blue-100 mt-4">
-    <InputField label="اسم الشهادة" name="otherDegreeName" value={formData.otherDegreeName || ''} onChange={handleChange} />
-    <InputField label="التخصص" name="otherDegreeSpecialty" value={formData.otherDegreeSpecialty || ''} onChange={handleChange} />
-    <InputField label="الجهة المسلمة" name="otherDegreeIssuer" value={formData.otherDegreeIssuer || ''} onChange={handleChange} />
-    <InputField label="عدد السداسيات" name="nmsemester" type="number" value={formData.nmsemester || ''} onChange={handleChange} />
-    <InputField label="من سنة " name="otherStartYear" type="number" value={formData.otherStartYear || ''} onChange={handleChange} />
-    <InputField label="إلى سنة" name="otherEndYear" type="number" value={formData.otherEndYear || ''} onChange={handleChange} />
-  </div>
-)}
-</div>
-
-
-
-					
+					  
+					  
+					  </div>
+                    )}
+                  </div>
                 </FormCard>
 
                 {/* 5. Publications Section */}
@@ -493,8 +453,6 @@ const handleAcademicYearChange = (year, field, value) => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-8 bg-blue-50/30 rounded-[2.5rem] border-2 border-blue-100 mt-6">
                         <InputField label="الرتبة أو الوظيفة" name="currentJobRank" required value={formData.currentJobRank} onChange={handleChange} />
                         <InputField label="تاريخ أول تعيين" name="firstAppointDate" type="date" required value={formData.firstAppointDate} onChange={handleChange} />
-                        <InputField label="ناريخ التعيين في الرتبة الحالية" name="hirAppointDate" type="date" required value={formData.hirAppointDate} onChange={handleChange} />
-
                         <InputField label="الصنف (الدرجة)" name="category" required value={formData.category} onChange={handleChange} />
                         <InputField label="رقم مرجع التعيين" name="jobRefNum" required value={formData.jobRefNum} onChange={handleChange} />
                         <InputField label="تاريخ المرجع" name="jobRefDate" type="date" required value={formData.jobRefDate} onChange={handleChange} />
@@ -568,7 +526,7 @@ const handleAcademicYearChange = (year, field, value) => {
                     <h2 className="text-3xl font-black text-slate-900 mb-4">تم تسجيلكم بنجاح!</h2>
                     <p className="text-xl font-bold text-slate-600">
                       أهلاً بك <span className="text-dz-green">{formData.firstNameAr} {formData.lastNameAr}</span>.
-                      لقد تم إرسال نموذجك الرقمي بنجاح
+                      لقد تم إرسال نموذجك الرقمي بنجاح إلى الإدارة.
                     </p>
                   </div>
 
