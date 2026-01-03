@@ -251,8 +251,8 @@
                                 <h1 className="font-black text-lg">المترشحين ({submissions.length})</h1>
                                 <button onClick={() => auth.signOut()}><Icons.LogOut/></button>
                             </div>
-                            <input type="text" placeholder="بحث بالإسم أو NIN..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full p-2.5 rounded-lg text-slate-900 font-bold outline-none text-sm mb-3" />
-                            <div className="flex flex-wrap gap-1.5 overflow-x-auto pb-1">
+                            <input type="text" placeholder="بحث بالإسم أو NIN..." value={search} onChange={e=>setSearch(e.target.value)} className="w-full p-2.5 rounded-lg text-slate-900 font-bold outline-none text-sm mb-3 text-right" />
+                            <div className="flex flex-wrap gap-1.5 overflow-x-auto pb-1 justify-end">
                                 {statusesList.map(st => (
                                     <button key={st} onClick={() => setFilterStatus(st)} className={`filter-btn ${filterStatus === st ? 'active' : ''}`}>{st}</button>
                                 ))}
@@ -282,7 +282,8 @@
                     <div className="flex-1 bg-slate-100/50 overflow-y-auto p-8 relative">
                         {selected ? (
                             <div className="max-w-6xl mx-auto pb-24 text-right">
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 sticky top-0 z-30 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 backdrop-blur-md bg-white/95">
+                                {/* Header Info Bar - تم حذف خاصية sticky هنا */}
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                                     <div className="flex flex-col gap-1 w-full md:w-auto">
                                         <h2 className="text-2xl font-black text-dark">{selected.firstNameAr} {selected.lastNameAr}</h2>
                                         <div className="flex gap-4 mt-2 justify-end">
@@ -311,16 +312,18 @@
                                         <button onClick={() => updateStatus(selected.id, 'جاري معالجة في منصة')} className="bg-sky-100 text-sky-700 border border-sky-300 px-3 py-2 rounded-lg font-bold text-xs">جاري معالجة في منصة</button>
                                         <button onClick={() => updateStatus(selected.id, 'مقبول في منصة')} className="bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-2 rounded-lg font-bold text-xs">مقبول في منصة</button>
                                         <button onClick={() => updateStatus(selected.id, 'غير مقبول في منصة')} className="bg-rose-100 text-rose-700 border border-rose-300 px-3 py-2 rounded-lg font-bold text-xs">غير مقبول في منصة</button>
-                                        <button onClick={() => handleDelete(selected.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-full"><Icons.Trash /></button>
+                                        <button onClick={() => handleDelete(selected.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors"><Icons.Trash /></button>
                                     </div>
                                 </div>
 
+                                {/* 1. معلومات التعيين */}
                                 <Section title="1. معلومات التعيين" icon={<Icons.Briefcase />}>
                                     <DataField label="المديرية" name="wilaya" value={displayData.wilaya} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="الرتبة المطلوبة" name="rank" value={displayData.rank} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="مادة التدريس" name="teachingSubject" value={displayData.teachingSubject} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
+                                {/* 2. الهوية والمعلومات الشخصية */}
                                 <Section title="2. الهوية والمعلومات الشخصية" icon={<Icons.User />} gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                                     <DataField label="NIN" name="nin" value={displayData.nin} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="رقم شهادة الميلاد" name="birthCertNum" value={displayData.birthCertNum} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
@@ -339,6 +342,7 @@
                                     <DataField label="بلدية الميلاد" name="birthCommune" value={displayData.birthCommune} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
+                                {/* معلومات الزوج / الزوجة */}
                                 {(selected.maritalStatus && selected.maritalStatus !== 'أعزب(ة)') && (
                                     <Section title="معلومات الزوج / الزوجة" icon={<Icons.User />} gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                                         <DataField label="اللقب (عربي)" name="Spouse_Surname_Arabic" value={displayData.Spouse_Surname_Arabic} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
@@ -358,6 +362,7 @@
                                     </Section>
                                 )}
 
+                                {/* 3. مكان الإقامة والخدمة الوطنية */}
                                 <Section title="3. مكان الإقامة والخدمة الوطنية" icon={<Icons.Home />}>
                                     <DataField label="ولاية الإقامة" name="residenceWilaya" value={displayData.residenceWilaya} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="بلدية الإقامة" name="residenceCommune" value={displayData.residenceCommune} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
@@ -371,6 +376,7 @@
                                     <DataField label="تاريخ النهاية" name="nsEndDate" value={displayData.nsEndDate} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} type="date" />
                                 </Section>
 
+                                {/* 4. الشهادات والمؤهلات والمسار الدراسي */}
                                 <Section title="4. الشهادات والمؤهلات والمسار الدراسي" icon={<Icons.GraduationCap />}>
                                     <DataField label="الشهادة" name="degree" value={displayData.degree} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="التخصص" name="degreeSpecialty" value={displayData.degreeSpecialty} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
@@ -387,6 +393,7 @@
                                     <DataField label="علامة المذكرة" name="thesisGrade" value={displayData.thesisGrade} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
+                                {/* كشوف النقاط السنوية */}
                                 {selected.academicYears && (
                                     <div className="mb-8 p-5 bg-white border border-gray-200 rounded-2xl shadow-sm text-right">
                                         <h4 className="font-black text-brand mb-4 text-sm flex items-center gap-2 justify-end"><Icons.BookOpen /> المسار الدراسي السنوي</h4>
@@ -404,17 +411,7 @@
                                     </div>
                                 )}
 
-                                {selected.hasOtherDegrees === 'نعم' && (
-                                    <Section title="شهادات عليا أخرى" icon={<Icons.GraduationCap />}>
-                                        <DataField label="اسم الشهادة" name="otherDegreeName" value={displayData.otherDegreeName} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
-                                        <DataField label="التخصص" name="otherDegreeSpecialty" value={displayData.otherDegreeSpecialty} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
-                                        <DataField label="الجهة المسلمة" name="otherDegreeIssuer" value={displayData.otherDegreeIssuer} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
-                                        <DataField label="عدد السداسيات" name="nmsemester" value={displayData.nmsemester} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
-                                        <DataField label="من سنة" name="otherStartYear" value={displayData.otherStartYear} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
-                                        <DataField label="إلى سنة" name="otherEndYear" value={displayData.otherEndYear} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
-                                    </Section>
-                                )}
-
+                                {/* 5. المنشورات والأعمال المهنية */}
                                 <Section title="5. المنشورات والأعمال المهنية" icon={<Icons.BookOpen />}>
                                     <DataField label="طبيعة العمل" name="pubNature" value={displayData.pubNature} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="تاريخ النشر" name="pubDate" value={displayData.pubDate} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} type="date" />
@@ -423,6 +420,7 @@
                                     <DataField label="رابط النشر" name="pubLink" value={displayData.pubLink} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
+                                {/* 6. الخبرة المهنية المكتسبة */}
                                 <Section title="6. الخبرة المهنية المكتسبة" icon={<Icons.Briefcase />}>
                                     <DataField label="فئة الخبرة" name="expType" value={displayData.expType} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="المنصب المشغول" name="expJob" value={displayData.expJob} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
@@ -435,10 +433,11 @@
                                     <DataField label="سبب التوقف" name="expTerminationReason" value={displayData.expTerminationReason} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
+                                {/* 7. الوضعية المهنية الحالية */}
                                 <Section title="7. الوضعية المهنية الحالية" icon={<Icons.Briefcase />}>
                                     <DataField label="الرتبة الحالية" name="currentJobRank" value={displayData.currentJobRank} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="تاريخ أول تعيين" name="firstAppointDate" value={displayData.firstAppointDate} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} type="date" />
-                                    <DataField label="تاريخ الرتبة" name="currentRankDate" value={displayData.currentRankDate} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} type="date" />
+                                    <DataField label="تاريخ الرتبة الحالية" name="currentRankDate" value={displayData.currentRankDate} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} type="date" />
                                     <DataField label="الصنف / الدرجة" name="category" value={displayData.category} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="المستوى / الدرجة" name="gradeLevel" value={displayData.gradeLevel} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                     <DataField label="رقم المرجع" name="jobRefNum" value={displayData.jobRefNum} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
@@ -450,15 +449,17 @@
                                     <DataField label="عنوان الإدارة" name="adminAddress" value={displayData.adminAddress} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
+                                {/* 8. بيانات الاتصال النهائية */}
                                 <Section title="8. بيانات الاتصال النهائية" icon={<Icons.Mail />}>
                                     <DataField label="البريد الإلكتروني الشخصي" name="email" value={displayData.email} isEditing={isEditing} onEditChange={handleEditChange} onCopy={copyToClipboard} />
                                 </Section>
 
-                                <Section title="9. بيانات الدخول وملاحظات الإدارة" icon={<Icons.Edit />}>
+                                {/* 9. بيانات الدخول وملاحظات الإدارة */}
+                                <Section title="9. ملاحظات الإدارة وبيانات الدخول" icon={<Icons.Edit />}>
                                     <DataField label="اسم المستخدم (للمنصة)" value={selected.email ? selected.email.split('@')[0] : '---'} onCopy={copyToClipboard} />
                                     <DataField label="كلمة المرور (للمنصة)" value={selected.phone || '---'} onCopy={copyToClipboard} />
                                     <div className="col-span-full">
-                                        <div className="bg-white border border-gray-200 p-3 rounded-lg flex flex-col h-full">
+                                        <div className="bg-white border border-gray-200 p-3 rounded-lg flex flex-col h-full text-right">
                                             <span className="text-xs text-brand font-black mb-1 italic">ملاحظات الإدارة:</span>
                                             {isEditing ? (
                                                 <textarea 
@@ -468,7 +469,7 @@
                                                     onChange={(e) => handleEditChange('adminNotes', e.target.value)}
                                                 ></textarea>
                                             ) : (
-                                                <p className="text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded min-h-[50px] whitespace-pre-wrap">
+                                                <p className="text-xs font-bold text-slate-600 bg-slate-50 p-2 rounded min-h-[50px] whitespace-pre-wrap text-right">
                                                     {selected.adminNotes || 'لا توجد ملاحظات'}
                                                 </p>
                                             )}
@@ -495,7 +496,7 @@
                 const unsub = auth.onAuthStateChanged(u => { setUser(u); setLoading(false); });
                 return () => unsub();
             }, []);
-            if (loading) return <div className="h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-4 border-brand"></div></div>;
+            if (loading) return <div className="h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-brand"></div></div>;
             return user ? <Dashboard /> : <LoginScreen />;
         };
 
