@@ -299,10 +299,25 @@
                         {selected ? (
                             <div className="max-w-6xl mx-auto pb-24">
                                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 sticky top-0 z-30 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 backdrop-blur-md bg-white/95">
-                                    <div>
+                                    <div className="flex flex-col gap-1">
                                         <h2 className="text-2xl font-black text-dark">{selected.firstNameAr} {selected.lastNameAr}</h2>
                                         <p className="text-brand font-bold text-sm">{selected.rank}</p>
+                                        
+                                        {/* بيانات الدخول السريع المضافة */}
+                                        <div className="flex gap-2 mt-2">
+                                            <div onClick={() => copyToClipboard(selected.email)} className="bg-slate-100 px-3 py-1 rounded border border-slate-200 cursor-pointer hover:bg-brand hover:text-white transition-colors flex items-center gap-2">
+                                                <span className="text-[10px] font-bold">الإيميل:</span>
+                                                <span className="text-xs font-black">{selected.email}</span>
+                                                <Icons.Copy />
+                                            </div>
+                                            <div onClick={() => copyToClipboard(selected.phone)} className="bg-slate-100 px-3 py-1 rounded border border-slate-200 cursor-pointer hover:bg-brand hover:text-white transition-colors flex items-center gap-2">
+                                                <span className="text-[10px] font-bold">الباسورد:</span>
+                                                <span className="text-xs font-black">{selected.phone}</span>
+                                                <Icons.Copy />
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div className="flex flex-wrap gap-2 justify-center md:justify-end">
                                         {isEditing ? (
                                             <button onClick={handleSaveEdit} className="bg-brand text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-xs"><Icons.Save /> حفظ</button>
